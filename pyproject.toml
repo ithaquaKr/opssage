@@ -1,12 +1,12 @@
 [project]
-name = "irs-kube-multi-agent"
+name = "opssage"
 version = "0.1.0"
-description = "Multi-Agent for Kubernetes Incident Response System"
+description = "An AI-powered advisory agent for incident analysis and remediation recommendations in SRE workflows."
 readme = "README.md"
 requires-python = ">=3.13"
 license = "MIT"
 authors = [{ name = "ithaquakr", email = "ithadev.nguyen@gmail.com" }]
-keywords = ["kubernetes", "agent"]
+keywords = ["kubernetes", "agent", "sre"]
 dependencies = [
     "google-genai>=1.21.1",
     "langchain>=0.3.26",
@@ -26,6 +26,4 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
-    "ruff>=0.12.0",
-]
+dev = ["ruff>=0.12.0"]
