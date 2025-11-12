@@ -1,0 +1,100 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" version="28.2.9" pages="2">
+  <diagram name="main-component" id="BiuSoqT98DHGzvbyGuNu">
+    <mxGraphModel dx="1808" dy="846" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-1" value="Operator Interaction Layer" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="823" y="750" width="330" height="128" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-2" value="" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="190" y="422" width="963" height="298" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-3" value="Monitoring &amp; Observability Layer" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="503.5" y="221" width="330" height="128" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-4" value="Cloud Environment" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="503.5" y="20" width="330" height="128" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-5" value="Cloud Applications &amp; Services" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="538.5" y="45" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-6" value="Monitoring and Logging Systems" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="538.5" y="246" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-7" value="Multi-Agent Architecture" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="550" y="447" width="237" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-8" value="LLM-based Reasoning Module" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="250" y="617" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-9" value="Knowledge Base" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="628" y="629" width="175" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-10" value="System Operator / ChatOps Interface" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="858" y="775" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-11" value="Telemetry Data" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" parent="1" source="-gLoB3RyLwkQB515FXTZ-5" target="-gLoB3RyLwkQB515FXTZ-6" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-12" value="Incident Signals" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" parent="1" source="-gLoB3RyLwkQB515FXTZ-6" target="-gLoB3RyLwkQB515FXTZ-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-13" value="Query &amp; Retrieve Knowledge" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=-0.01;rounded=0;exitDx=0;exitDy=0;" parent="1" source="-gLoB3RyLwkQB515FXTZ-7" target="-gLoB3RyLwkQB515FXTZ-9" edge="1">
+          <mxGeometry x="-0.0781" y="55" relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-14" value="Context &amp; Queries" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.5;entryX=0.35;entryY=-0.01;rounded=0;exitDx=0;exitDy=0;" parent="1" source="-gLoB3RyLwkQB515FXTZ-7" target="-gLoB3RyLwkQB515FXTZ-8" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="316" y="546" />
+              <mxPoint x="316" y="592" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-15" value="Reasoned Insights &amp; Remediation Suggestions" style="curved=1;startArrow=none;endArrow=block;exitX=0.77;exitY=-0.01;entryX=0.15;entryY=1;rounded=0;" parent="1" source="-gLoB3RyLwkQB515FXTZ-8" target="-gLoB3RyLwkQB515FXTZ-7" edge="1">
+          <mxGeometry x="0.0032" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="495" y="592" />
+              <mxPoint x="520" y="570" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-16" value="Recommendations &amp; Reports" style="curved=1;startArrow=none;endArrow=block;exitX=0.75;exitY=1;entryX=0.25;entryY=0;rounded=0;entryDx=0;entryDy=0;" parent="1" source="-gLoB3RyLwkQB515FXTZ-7" target="-gLoB3RyLwkQB515FXTZ-10" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="874" y="546" />
+              <mxPoint x="910" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-17" value="Feedback &amp; Validation" style="curved=1;startArrow=none;endArrow=block;exitX=0.75;exitY=0;entryX=1;entryY=0.97;rounded=0;exitDx=0;exitDy=0;" parent="1" source="-gLoB3RyLwkQB515FXTZ-10" target="-gLoB3RyLwkQB515FXTZ-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1051" y="592" />
+              <mxPoint x="1051" y="546" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-gLoB3RyLwkQB515FXTZ-18" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; background-color: rgb(255, 255, 255); display: inline !important;&quot;&gt;Incident Analysis &amp;amp; Support System&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="200" y="430" width="220" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="OpV3VrEnpv4D2yccxE4y" name="Page-2">
+    <mxGraphModel dx="1808" dy="846" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
