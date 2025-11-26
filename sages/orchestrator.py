@@ -1,0 +1,245 @@
+"""
+Orchestration layer for the multi-agent incident analysis system.
+Coordinates the flow between AICA, KREA, and RCARA agents.
+"""
+
+import json
+import logging
+from typing import Any
+
+from google.adk.agents import Agent
+
+from sages.context_store import get_context_store
+from sages.models import (
+    AICAOutput,
+    AlertInput,
+    EnhancedContextPackage,
+    IncidentDiagnosticReport,
+    KREAOutput,
+    PrimaryContextPackage,
+    RCARAOutput,
+)
+from sages.subagents.aica import create_aica_agent
+from sages.subagents.krea import create_krea_agent
+from sages.subagents.rcara import create_rcara_agent
+
+logger = logging.getLogger(__name__)
+
+
+class IncidentOrchestrator:
+    """
+    Orchestrates the multi-agent incident analysis workflow.
+    Coordinates AICA → KREA → RCARA pipeline.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the orchestrator with agent instances."""
+        self.aica: Agent = create_aica_agent()
+        self.krea: Agent = create_krea_agent()
+        self.rcara: Agent = create_rcara_agent()
+        self.context_store = get_context_store()
+
+    async def analyze_incident(
+        self, alert: AlertInput
+    ) -> tuple[str, IncidentDiagnosticReport]:
+        """
+        Run the full incident analysis pipeline.
+
+        Args:
+            alert: The alert to analyze
+
+        Returns:
+            Tuple of (incident_id, diagnostic_report)
+
+        Raises:
+            Exception: If any stage of the analysis fails
+        """
+        # Create incident in context store
+        incident_id = await self.context_store.create_incident(alert)
+        logger.info(f"Created incident {incident_id} for alert {alert.alert_name}")
+
+        try:
+            # Stage 1: AICA - Alert Ingestion & Context
+            await self.context_store.update_status(incident_id, "running_aica")
+            primary_context = await self._run_aica(alert)
+            await self.context_store.update_primary_context(
+                incident_id, primary_context
+            )
+            logger.info(f"AICA completed for incident {incident_id}")
+
+            # Stage 2: KREA - Knowledge Retrieval & Enrichment
+            await self.context_store.update_status(incident_id, "running_krea")
+            enhanced_context = await self._run_krea(primary_context)
+            await self.context_store.update_enhanced_context(
+                incident_id, enhanced_context
+            )
+            logger.info(f"KREA completed for incident {incident_id}")
+
+            # Stage 3: RCARA - Root Cause Analysis & Remediation
+            await self.context_store.update_status(incident_id, "running_rcara")
+            diagnostic_report = await self._run_rcara(primary_context, enhanced_context)
+            await self.context_store.update_diagnostic_report(
+                incident_id, diagnostic_report
+            )
+            logger.info(f"RCARA completed for incident {incident_id}")
+
+            return incident_id, diagnostic_report
+
+        except Exception as e:
+            logger.error(f"Error analyzing incident {incident_id}: {e}")
+            await self.context_store.update_status(incident_id, "failed")
+            raise
+
+    async def _run_aica(self, alert: AlertInput) -> PrimaryContextPackage:
+        """
+        Run AICA agent to build primary context.
+
+        Args:
+            alert: The alert input
+
+        Returns:
+            Primary context package from AICA
+        """
+        # Prepare input for AICA
+        alert_json = alert.model_dump_json(indent=2)
+        prompt = f"""Analyze the following alert and build a comprehensive Primary Context Package.
+
+Alert:
+{alert_json}
+
+Use the available tools to gather metrics, logs, and events as needed to build a complete picture of the incident."""
+
+        # Run AICA agent
+        response = await self.aica.run_async(prompt)
+
+        # Parse and validate response
+        output_data = self._extract_json_from_response(response.content)
+        aica_output = AICAOutput.model_validate(output_data)
+
+        return aica_output.primary_context_package
+
+    async def _run_krea(
+        self, primary_context: PrimaryContextPackage
+    ) -> EnhancedContextPackage:
+        """
+        Run KREA agent to enrich context with knowledge.
+
+        Args:
+            primary_context: The primary context from AICA
+
+        Returns:
+            Enhanced context package from KREA
+        """
+        # Prepare input for KREA
+        context_json = primary_context.model_dump_json(indent=2)
+        prompt = f"""Enrich the following Primary Context Package with relevant knowledge from the knowledge base.
+
+Primary Context Package:
+{context_json}
+
+Use the available tools to search for relevant documentation, playbooks, and past incidents.
+Focus on retrieving actionable knowledge that will help with root cause analysis."""
+
+        # Run KREA agent
+        response = await self.krea.run_async(prompt)
+
+        # Parse and validate response
+        output_data = self._extract_json_from_response(response.content)
+        krea_output = KREAOutput.model_validate(output_data)
+
+        return krea_output.enhanced_context_package
+
+    async def _run_rcara(
+        self,
+        primary_context: PrimaryContextPackage,
+        enhanced_context: EnhancedContextPackage,
+    ) -> IncidentDiagnosticReport:
+        """
+        Run RCARA agent to perform root cause analysis.
+
+        Args:
+            primary_context: The primary context from AICA
+            enhanced_context: The enhanced context from KREA
+
+        Returns:
+            Incident diagnostic report from RCARA
+        """
+        # Prepare input for RCARA
+        primary_json = primary_context.model_dump_json(indent=2)
+        enhanced_json = enhanced_context.model_dump_json(indent=2)
+
+        prompt = f"""Perform root cause analysis and generate remediation recommendations.
+
+Primary Context Package:
+{primary_json}
+
+Enhanced Context Package:
+{enhanced_json}
+
+Use structured reasoning to identify the root cause and provide specific, actionable remediation recommendations."""
+
+        # Run RCARA agent
+        response = await self.rcara.run_async(prompt)
+
+        # Parse and validate response
+        output_data = self._extract_json_from_response(response.content)
+        rcara_output = RCARAOutput.model_validate(output_data)
+
+        return rcara_output.incident_diagnostic_report
+
+    def _extract_json_from_response(self, response: str) -> dict[str, Any]:
+        """
+        Extract JSON from agent response, handling code blocks and other formatting.
+
+        Args:
+            response: The raw response from an agent
+
+        Returns:
+            Parsed JSON data
+
+        Raises:
+            ValueError: If JSON cannot be extracted or parsed
+        """
+        # Remove markdown code blocks if present
+        content = response.strip()
+
+        # Check for ```json blocks
+        if "```json" in content:
+            start = content.find("```json") + 7
+            end = content.find("```", start)
+            content = content[start:end].strip()
+        # Check for ``` blocks
+        elif "```" in content:
+            start = content.find("```") + 3
+            end = content.find("```", start)
+            content = content[start:end].strip()
+
+        # Try to find JSON object boundaries
+        if not content.startswith("{"):
+            start = content.find("{")
+            if start == -1:
+                raise ValueError("No JSON object found in response")
+            content = content[start:]
+
+        if not content.endswith("}"):
+            end = content.rfind("}")
+            if end == -1:
+                raise ValueError("No complete JSON object found in response")
+            content = content[: end + 1]
+
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON: {e}")
+            logger.error(f"Content: {content}")
+            raise ValueError(f"Invalid JSON in response: {e}") from e
+
+
+def create_orchestrator() -> IncidentOrchestrator:
+    """
+    Create an instance of the incident orchestrator.
+
+    Returns:
+        Configured IncidentOrchestrator instance
+    """
+    return IncidentOrchestrator()

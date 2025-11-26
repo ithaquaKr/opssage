@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "opssage.fullname" . }}
+  labels:
+    {{- include "opssage.labels" . | nindent 4 }}
+data:
+  policy.yaml: |
+    # Auto-remediation policy configuration
+    allow_auto_remediate: {{ .Values.policy.allowAutoRemediate }}
+    # Note: We default to manual approval for DB changes;
+    # to change this, update policy.allowAutoRemediate in Helm values.
