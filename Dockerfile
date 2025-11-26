@@ -24,6 +24,7 @@ COPY --from=builder /app/.venv /app/.venv
 
 # Copy application code
 COPY sages /app/sages
+COPY apis /app/apis
 COPY README.md /app/
 
 # Set environment variables
@@ -39,4 +40,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/api/v1/health')"
 
 # Run the application
-CMD ["uvicorn", "sages.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "apis.main:app", "--host", "0.0.0.0", "--port", "8000"]

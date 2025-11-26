@@ -4,7 +4,7 @@ Responsible for performing causal reasoning and generating remediation recommend
 """
 
 from google.adk.agents import Agent
-from google.adk.tools import tool
+from google.adk.tools import agent_tool
 
 from sages.configs import sage_configs
 from sages.tools import verify_cluster_state_tool
@@ -69,7 +69,7 @@ def create_rcara_agent() -> Agent:
         description="Root Cause Analysis & Remediation Agent - Performs causal reasoning and generates remediation plans",
         instruction=RCARA_SYSTEM_PROMPT,
         tools=[
-            tool(verify_cluster_state_tool),
+            agent_tool(verify_cluster_state_tool),
         ],
         output_key="rcara_output",
     )

@@ -37,10 +37,10 @@ clean:  ## Clean up generated files
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 
 run:  ## Run the API server locally
-	uv run uvicorn sages.api:app --reload --log-level info
+	uv run uvicorn apis.main:app --reload --log-level info
 
 run-prod:  ## Run the API server in production mode
-	uv run uvicorn sages.api:app --host 0.0.0.0 --port 8000 --workers 4
+	uv run uvicorn apis.main:app --host 0.0.0.0 --port 8000 --workers 4
 
 docker-build:  ## Build Docker image
 	docker build -t opssage:latest .

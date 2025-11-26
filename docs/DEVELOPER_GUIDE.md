@@ -135,10 +135,9 @@ def context_store() -> ContextStore:
 ## Project Structure
 
 ```
-sages/
+sages/                   # Core agent package
 ├── __init__.py
 ├── agent.py              # Main agent entry point
-├── api.py               # FastAPI application
 ├── configs.py           # Configuration
 ├── context_store.py     # Shared context store
 ├── logging.py           # Logging setup
@@ -152,6 +151,10 @@ sages/
     ├── aica.py          # AICA agent
     ├── krea.py          # KREA agent
     └── rcara.py         # RCARA agent
+
+apis/                    # FastAPI application
+├── __init__.py
+└── main.py             # API server and routes
 ```
 
 ## Adding New Features
@@ -166,7 +169,7 @@ New Agent - Description
 """
 
 from google.adk.agents import Agent
-from google.adk.tools import tool
+from google.adk.tools import agent_tool
 
 from sages.configs import sage_configs
 from sages.tools import some_tool
@@ -180,7 +183,7 @@ def create_new_agent() -> Agent:
         model=sage_configs.worker_model,
         description="Agent description",
         instruction=AGENT_SYSTEM_PROMPT,
-        tools=[tool(some_tool)],
+        tools=[agent_tool(some_tool)],
         output_key="agent_output",
     )
 ```
@@ -232,9 +235,11 @@ def new_tool(ctx: ToolContext, param: str) -> str:
 4. Register tool with agent:
 
 ```python
+from google.adk.tools import agent_tool
+
 agent = Agent(
     name="agent",
-    tools=[tool(new_tool)],
+    tools=[agent_tool(new_tool)],
     ...
 )
 ```
@@ -288,7 +293,7 @@ async def new_endpoint(data: InputModel) -> OutputModel:
 
 ```python
 from fastapi.testclient import TestClient
-from sages.api import app
+from apis.main import app
 
 def test_new_endpoint():
     client = TestClient(app)
@@ -306,10 +311,10 @@ def test_new_endpoint():
 
 ```bash
 # Run with debug logging
-LOG_LEVEL=DEBUG uvicorn sages.api:app --reload
+LOG_LEVEL=DEBUG uvicorn apis.main:app --reload
 
 # Run with debugger
-python -m debugpy --listen 5678 -m uvicorn sages.api:app --reload
+python -m debugpy --listen 5678 -m uvicorn apis.main:app --reload
 ```
 
 ### Debugging Agents

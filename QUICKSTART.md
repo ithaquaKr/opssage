@@ -41,7 +41,7 @@ cp env.example .env
 source .venv/bin/activate
 
 # Start the API server
-uvicorn sages.api:app --reload
+uvicorn apis.main:app --reload
 
 # Or use the Makefile
 make run

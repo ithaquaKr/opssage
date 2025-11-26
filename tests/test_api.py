@@ -5,7 +5,7 @@ Tests for the FastAPI application.
 import pytest
 from fastapi.testclient import TestClient
 
-from sages.api import app
+from apis.main import app
 
 
 @pytest.fixture

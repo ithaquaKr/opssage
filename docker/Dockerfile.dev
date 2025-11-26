@@ -14,6 +14,7 @@ RUN uv sync --frozen
 
 # Copy application code
 COPY sages /app/sages
+COPY apis /app/apis
 COPY tests /app/tests
 
 # Set environment variables
@@ -24,4 +25,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 
 # Run with hot-reload
-CMD ["uvicorn", "sages.api:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "apis.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

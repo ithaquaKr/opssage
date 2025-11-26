@@ -4,7 +4,7 @@ Responsible for retrieving relevant knowledge and enriching the context.
 """
 
 from google.adk.agents import Agent
-from google.adk.tools import tool
+from google.adk.tools import agent_tool
 
 from sages.configs import sage_configs
 from sages.tools import (
@@ -80,9 +80,9 @@ def create_krea_agent() -> Agent:
         description="Knowledge Retrieval & Enrichment Agent - Retrieves relevant knowledge and enriches context",
         instruction=KREA_SYSTEM_PROMPT,
         tools=[
-            tool(vector_search_tool),
-            tool(document_lookup_tool),
-            tool(playbook_query_tool),
+            agent_tool(vector_search_tool),
+            agent_tool(document_lookup_tool),
+            agent_tool(playbook_query_tool),
         ],
         output_key="krea_output",
     )

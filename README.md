@@ -54,7 +54,7 @@ graph LR
 - **Tools** (`sages/tools.py`): Capability adapters for external systems
 - **Context Store** (`sages/context_store.py`): Shared state management
 - **Orchestrator** (`sages/orchestrator.py`): Coordinates agent pipeline
-- **API** (`sages/api.py`): FastAPI server for external access
+- **API** (`apis/`): FastAPI server for external access
 
 ## Quick Start
 
@@ -86,7 +86,7 @@ cp env.example .env
 source .venv/bin/activate
 
 # Run the FastAPI server
-uvicorn sages.api:app --reload
+uvicorn apis.main:app --reload
 
 # The API will be available at http://localhost:8000
 ```
@@ -170,7 +170,7 @@ curl http://localhost:8000/api/v1/incidents?status=completed
 
 ```
 opssage/
-├── sages/                  # Main package
+├── sages/                  # Core agent package
 │   ├── subagents/         # Agent implementations
 │   │   ├── aica.py       # Alert Ingestion & Context Agent
 │   │   ├── krea.py       # Knowledge Retrieval & Enrichment Agent
@@ -179,8 +179,9 @@ opssage/
 │   ├── tools.py           # Capability adapters
 │   ├── context_store.py   # Shared context store
 │   ├── orchestrator.py    # Pipeline orchestration
-│   ├── api.py            # FastAPI server
 │   └── configs.py        # Configuration
+├── apis/                  # FastAPI application
+│   └── main.py           # API server and routes
 ├── tests/                 # Test suite
 ├── deploy/               # Deployment configurations
 │   └── helm/            # Helm charts

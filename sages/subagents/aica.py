@@ -4,7 +4,7 @@ Responsible for ingesting alerts and constructing the Primary Context Package.
 """
 
 from google.adk.agents import Agent
-from google.adk.tools import tool
+from google.adk.tools import agent_tool
 
 from sages.configs import sage_configs
 from sages.tools import (
@@ -87,9 +87,9 @@ def create_aica_agent() -> Agent:
         description="Alert Ingestion & Context Agent - Analyzes alerts and builds primary context",
         instruction=AICA_SYSTEM_PROMPT,
         tools=[
-            tool(metrics_query_tool),
-            tool(log_search_tool),
-            tool(event_lookup_tool),
+            agent_tool(metrics_query_tool),
+            agent_tool(log_search_tool),
+            agent_tool(event_lookup_tool),
         ],
         output_key="aica_output",
     )
