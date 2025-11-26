@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # OpsSage Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: opssage-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/credentials.json
+      - USE_REAL_KNOWLEDGE_ADAPTER=true
+      - CHROMADB_PATH=/app/data/chromadb
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./credentials:/app/credentials:ro
+      - chromadb-data:/app/data/chromadb
+      - ./sages:/app/sages
+      - ./apis:/app/apis
+    networks:
+      - opssage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Web Dashboard
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: ../docker/Dockerfile.dashboard
+      args:
+        - VITE_API_URL=http://localhost:8000
+    container_name: opssage-dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - opssage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ChromaDB (Vector Database) - Standalone service for testing
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: opssage-chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb-standalone:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - opssage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: opssage-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - opssage-network
+    restart: unless-stopped
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: opssage-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - opssage-network
+    restart: unless-stopped
+
+  # Mock Metrics API (for testing without real infrastructure)
+  mock-metrics:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mock-services
+    container_name: opssage-mock-metrics
+    ports:
+      - "9091:8080"
+    environment:
+      - SERVICE_TYPE=metrics
+    networks:
+      - opssage-network
+    restart: unless-stopped
+
+  # Mock Logs API (for testing without real infrastructure)
+  mock-logs:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mock-services
+    container_name: opssage-mock-logs
+    ports:
+      - "9092:8080"
+    environment:
+      - SERVICE_TYPE=logs
+    networks:
+      - opssage-network
+    restart: unless-stopped
+
+networks:
+  opssage-network:
+    driver: bridge
+
+volumes:
+  chromadb-data:
+  chromadb-standalone:
+  prometheus-data:
+  grafana-data:

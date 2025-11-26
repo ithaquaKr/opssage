@@ -254,7 +254,48 @@ uv run mypy sages
 
 ## Deployment
 
-### Kubernetes with Helm
+### Docker Compose (Recommended for Local Testing)
+
+Quick start with Docker Compose for complete local environment:
+
+```bash
+# Automated setup
+make setup          # or ./scripts/dev-setup.sh
+
+# Build and start all services
+make run            # or docker-compose up -d
+
+# Access services
+# Dashboard:    http://localhost:3000
+# Backend API:  http://localhost:8000
+# Prometheus:   http://localhost:9090
+# Grafana:      http://localhost:3001
+```
+
+See [Docker Compose Guide](docs/DOCKER_COMPOSE_GUIDE.md) for detailed documentation.
+
+### Kind (Kubernetes in Docker) - Multi-Node Testing
+
+Test OpsSage on a real Kubernetes cluster locally:
+
+```bash
+# Create Kind cluster (1 control plane + 3 worker nodes)
+make kind-setup     # or ./scripts/kind-setup.sh
+
+# Build and deploy to Kind
+make kind-deploy    # or ./scripts/kind-deploy.sh
+
+# Access services (via NodePort)
+# Backend:   http://localhost:8000
+# Dashboard: http://localhost:3000
+
+# Cleanup
+make kind-teardown  # or ./scripts/kind-teardown.sh
+```
+
+See [Kind Guide](docs/KIND_GUIDE.md) for detailed documentation.
+
+### Kubernetes with Helm (Production)
 
 ```bash
 # Install OpsSage using Helm
@@ -268,6 +309,17 @@ helm upgrade opssage ./deploy/helm
 # Uninstall
 helm uninstall opssage
 ```
+
+### Deployment Modes Comparison
+
+| Feature | Docker Compose | Kind | Production K8s |
+|---------|---------------|------|----------------|
+| Use Case | Development | Testing | Production |
+| Setup Time | 1-2 min | 3-5 min | 15-30 min |
+| Kubernetes | ❌ | ✅ | ✅ |
+| Multi-Node | ❌ | ✅ (4 nodes) | ✅ |
+| Resource Usage | Low (2GB) | Medium (4GB) | High |
+| Cost | Free | Free | $$$ |
 
 ### Configuration
 

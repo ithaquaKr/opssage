@@ -1,93 +1,190 @@
-.PHONY: help install test lint format clean run docker-build docker-run deploy
+.PHONY: help setup dev build test clean docker-up docker-down kind-setup kind-deploy kind-teardown lint format
 
-help:  ## Show this help message
-	@echo "OpsSage - Multi-Agent Incident Analysis & Remediation System"
-	@echo ""
-	@echo "Available targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+# Colors
+BLUE := \033[0;34m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+NC := \033[0m # No Color
 
-install:  ## Install dependencies
-	uv sync --all-extras
+help: ## Show this help message
+	@echo '$(BLUE)OpsSage - Multi-Agent Incident Analysis System$(NC)'
+	@echo ''
+	@echo 'Usage: make [target]'
+	@echo ''
+	@echo 'Available targets:'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
 
-install-dev:  ## Install development dependencies
-	uv sync --all-extras
-	uv run pre-commit install
+setup: ## Initial project setup
+	@echo '$(BLUE)Setting up development environment...$(NC)'
+	@./scripts/dev-setup.sh
 
-test:  ## Run tests
-	uv run pytest tests/ -v
+dev: ## Start local development servers
+	@echo '$(BLUE)Starting local development servers...$(NC)'
+	@echo 'Backend: http://localhost:8000'
+	@echo 'Dashboard: http://localhost:3000'
+	@trap 'kill 0' SIGINT; \
+	(cd dashboard && npm run dev) & \
+	uvicorn apis.main:app --reload
 
-test-cov:  ## Run tests with coverage
-	uv run pytest tests/ -v --cov=sages --cov-report=html --cov-report=term
+build: ## Build Docker images
+	@echo '$(BLUE)Building Docker images...$(NC)'
+	docker-compose build
 
-lint:  ## Run linters
-	uv run ruff check sages tests
-	uv run mypy sages
-	uv run codespell
+test: ## Run tests
+	@echo '$(BLUE)Running tests...$(NC)'
+	@source .venv/bin/activate && pytest tests/ -v
 
-format:  ## Format code
-	uv run ruff format sages tests
-	uv run ruff check --fix sages tests
+test-rag: ## Test RAG pipeline
+	@echo '$(BLUE)Testing RAG pipeline...$(NC)'
+	@python scripts/test_rag.py
 
-clean:  ## Clean up generated files
-	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name htmlcov -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name .coverage -delete 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+lint: ## Run linters
+	@echo '$(BLUE)Running linters...$(NC)'
+	@source .venv/bin/activate && \
+	ruff check sages apis tests && \
+	mypy sages
 
-run:  ## Run the API server locally
-	uv run uvicorn apis.main:app --reload --log-level info
+format: ## Format code
+	@echo '$(BLUE)Formatting code...$(NC)'
+	@source .venv/bin/activate && \
+	ruff format sages apis tests
 
-run-prod:  ## Run the API server in production mode
-	uv run uvicorn apis.main:app --host 0.0.0.0 --port 8000 --workers 4
+clean: ## Clean up build artifacts
+	@echo '$(BLUE)Cleaning up...$(NC)'
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf build/ dist/
+	@echo '$(GREEN)Clean complete$(NC)'
 
-docker-build:  ## Build Docker image
-	docker build -t opssage:latest .
+# Docker Compose targets
+docker-up: ## Start services with Docker Compose
+	@echo '$(BLUE)Starting Docker Compose services...$(NC)'
+	docker-compose up -d
+	@echo '$(GREEN)Services started$(NC)'
+	@echo 'Backend:   http://localhost:8000'
+	@echo 'Dashboard: http://localhost:3000'
+	@echo 'Grafana:   http://localhost:3001'
+	@echo ''
+	@echo 'View logs: make docker-logs'
 
-docker-build-dev:  ## Build development Docker image
-	docker build -f docker/Dockerfile.dev -t opssage:dev .
+docker-down: ## Stop Docker Compose services
+	@echo '$(BLUE)Stopping Docker Compose services...$(NC)'
+	docker-compose down
 
-docker-run:  ## Run Docker container
-	docker run -p 8000:8000 --env-file .env opssage:latest
+docker-logs: ## View Docker Compose logs
+	docker-compose logs -f
 
-docker-run-dev:  ## Run development Docker container
-	docker run -p 8000:8000 -v $(PWD):/app --env-file .env opssage:dev
+docker-restart: ## Restart Docker Compose services
+	@echo '$(BLUE)Restarting services...$(NC)'
+	docker-compose restart
 
-# Kubernetes and Helm targets
-helm-install:  ## Install with Helm
-	helm install opssage ./deploy/helm
+docker-clean: ## Stop services and remove volumes
+	@echo '$(YELLOW)Warning: This will delete all data$(NC)'
+	@read -p "Continue? [y/N]: " -n 1 -r; \
+	echo; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		docker-compose down -v; \
+		echo '$(GREEN)Services stopped and volumes removed$(NC)'; \
+	fi
 
-helm-upgrade:  ## Upgrade Helm release
-	helm upgrade opssage ./deploy/helm
+# Kind (Kubernetes) targets
+kind-setup: ## Create Kind cluster
+	@echo '$(BLUE)Setting up Kind cluster...$(NC)'
+	@./scripts/kind-setup.sh
 
-helm-uninstall:  ## Uninstall Helm release
-	helm uninstall opssage
+kind-deploy: ## Deploy to Kind cluster
+	@echo '$(BLUE)Deploying to Kind cluster...$(NC)'
+	@./scripts/kind-deploy.sh
 
-helm-template:  ## Generate Helm templates
-	helm template opssage ./deploy/helm
+kind-teardown: ## Delete Kind cluster
+	@echo '$(BLUE)Tearing down Kind cluster...$(NC)'
+	@./scripts/kind-teardown.sh
 
-# CI targets
-ci-lint:  ## Run CI linting checks
-	uv run ruff check sages tests
-	uv run ruff format --check sages tests
-	uv run mypy sages
-	uv run codespell
+kind-logs: ## View Kubernetes logs
+	kubectl logs -f -n opssage -l app=opssage-backend
 
-ci-test:  ## Run CI tests
-	uv run pytest tests/ -v --cov=sages --cov-report=xml --cov-report=term
+kind-status: ## Show Kind cluster status
+	@echo '$(BLUE)Cluster Status:$(NC)'
+	@kind get clusters
+	@echo ''
+	@kubectl get nodes
+	@echo ''
+	@kubectl get all -n opssage
 
-ci-build:  ## Build for CI
-	docker build -t opssage:test .
+# Database targets
+db-backup: ## Backup ChromaDB data
+	@echo '$(BLUE)Backing up ChromaDB...$(NC)'
+	@mkdir -p backups
+	@docker run --rm \
+		-v opssage_chromadb-data:/data \
+		-v $(PWD)/backups:/backup \
+		alpine tar czf /backup/chromadb-$(shell date +%Y%m%d-%H%M%S).tar.gz -C /data .
+	@echo '$(GREEN)Backup complete$(NC)'
 
-# Development utilities
-dev-reset:  ## Reset development environment
-	rm -rf .venv uv.lock
-	uv sync --all-extras
+db-restore: ## Restore ChromaDB data (specify BACKUP=filename)
+	@if [ -z "$(BACKUP)" ]; then \
+		echo '$(RED)Error: Please specify BACKUP=filename$(NC)'; \
+		echo 'Example: make db-restore BACKUP=chromadb-20240115-120000.tar.gz'; \
+		exit 1; \
+	fi
+	@echo '$(BLUE)Restoring ChromaDB from $(BACKUP)...$(NC)'
+	@docker run --rm \
+		-v opssage_chromadb-data:/data \
+		-v $(PWD)/backups:/backup \
+		alpine tar xzf /backup/$(BACKUP) -C /data
+	@echo '$(GREEN)Restore complete$(NC)'
 
-dev-shell:  ## Start development shell
-	uv run python
+# Documentation
+docs-serve: ## Serve documentation locally
+	@echo '$(BLUE)Starting documentation server...$(NC)'
+	@echo 'Available at: http://localhost:8080'
+	@python -m http.server 8080 --directory docs
 
-docs-serve:  ## Serve documentation locally
-	@echo "Documentation is in docs/ directory"
-	@echo "README: cat README.md"
+# Install targets
+install-deps: ## Install all dependencies
+	@echo '$(BLUE)Installing Python dependencies...$(NC)'
+	@uv pip install -r pyproject.toml
+	@echo '$(BLUE)Installing Dashboard dependencies...$(NC)'
+	@cd dashboard && npm install
+	@echo '$(GREEN)Dependencies installed$(NC)'
+
+install-dev: ## Install development tools
+	@echo '$(BLUE)Installing development tools...$(NC)'
+	@pip install uv ruff mypy pytest pytest-cov
+	@echo '$(GREEN)Development tools installed$(NC)'
+
+# Quick actions
+run: docker-up ## Quick start with Docker Compose
+
+stop: docker-down ## Quick stop Docker Compose
+
+restart: docker-restart ## Quick restart Docker Compose
+
+status: ## Show system status
+	@echo '$(BLUE)=== System Status ===$(NC)'
+	@echo ''
+	@echo '$(BLUE)Docker Compose Services:$(NC)'
+	@docker-compose ps 2>/dev/null || echo 'Not running'
+	@echo ''
+	@echo '$(BLUE)Kind Clusters:$(NC)'
+	@kind get clusters 2>/dev/null || echo 'No clusters'
+	@echo ''
+	@if kind get clusters 2>/dev/null | grep -q opssage-cluster; then \
+		echo '$(BLUE)Kubernetes Pods:$(NC)'; \
+		kubectl get pods -n opssage 2>/dev/null || echo 'Namespace not found'; \
+	fi
+
+# Version info
+version: ## Show version information
+	@echo 'OpsSage v0.1.0'
+	@echo ''
+	@echo 'Tool versions:'
+	@echo -n 'Python: ' && python --version 2>&1
+	@echo -n 'Docker: ' && docker --version 2>&1
+	@echo -n 'Docker Compose: ' && (docker-compose --version 2>&1 || docker compose version 2>&1)
+	@if command -v kind >/dev/null 2>&1; then echo -n 'Kind: ' && kind version 2>&1; fi
+	@if command -v kubectl >/dev/null 2>&1; then echo -n 'kubectl: ' && kubectl version --client --short 2>&1 || kubectl version --client 2>&1; fi
+	@if command -v node >/dev/null 2>&1; then echo -n 'Node: ' && node --version 2>&1; fi
