@@ -68,7 +68,7 @@ graph LR
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/opssage.git
+git clone https://github.com/ithaquaKr/opssage.git
 cd opssage
 
 # Install dependencies using uv
@@ -304,5 +304,6 @@ Contributions are welcome! Please see the contributing guidelines for more infor
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/yourusername/opssage/issues
-- Documentation: https://github.com/yourusername/opssage/docs
+
+- GitHub Issues: <https://github.com/ithaquaKr/opssage/issues>
+- Documentation: <https://github.com/ithaquaKr/opssage/docs>
