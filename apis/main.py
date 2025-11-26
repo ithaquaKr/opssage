@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from apis.documents import router as documents_router
 from sages.context_store import get_context_store
 from sages.models import AlertInput, IncidentContext
 from sages.orchestrator import create_orchestrator
@@ -43,6 +44,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(documents_router)
 
 
 @app.get("/")

@@ -40,3 +40,16 @@ logs/
 # Environment variables
 .env
 .env.*
+
+# Vector store data
+data/
+chromadb/
+
+# Credentials
+credentials.json
+service-account-key.json
+
+# Dashboard
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.vite/

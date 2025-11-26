@@ -22,7 +22,11 @@ Alert → AICA → KREA → RCARA → Diagnostic Report
 - **Structured Message Contracts**: Type-safe communication between agents using Pydantic models
 - **Shared Context Store**: Thread-safe storage for incident analysis state
 - **Capability Adapters**: Pluggable tool interfaces for metrics, logs, events, and knowledge retrieval
+- **RAG Pipeline**: Complete retrieval-augmented generation for document ingestion and semantic search
+- **Vector Store**: ChromaDB-based knowledge base with semantic similarity search
+- **Document Management**: Upload, search, and manage runbooks, playbooks, and documentation
 - **RESTful API**: FastAPI-based server with health checks and incident management endpoints
+- **Web Dashboard**: Modern React-based UI for managing alerts, incidents, and documents
 - **Kubernetes-Native**: Helm charts and manifests for production deployment
 - **Comprehensive Testing**: Unit tests, integration tests, and API tests
 - **CI/CD Pipeline**: Automated testing, linting, and deployment via GitHub Actions
@@ -79,7 +83,7 @@ cp env.example .env
 # Edit .env with your Google Cloud credentials
 ```
 
-### Running Locally
+### Running the Backend
 
 ```bash
 # Activate virtual environment
@@ -90,6 +94,23 @@ uvicorn apis.main:app --reload
 
 # The API will be available at http://localhost:8000
 ```
+
+### Running the Dashboard
+
+```bash
+# Navigate to dashboard directory
+cd dashboard
+
+# Install dependencies (first time only)
+npm install
+
+# Start development server
+npm run dev
+
+# The dashboard will be available at http://localhost:3000
+```
+
+See [dashboard/README.md](dashboard/README.md) for detailed dashboard documentation.
 
 ### Running with Docker
 
@@ -175,19 +196,31 @@ opssage/
 │   │   ├── aica.py       # Alert Ingestion & Context Agent
 │   │   ├── krea.py       # Knowledge Retrieval & Enrichment Agent
 │   │   └── rcara.py      # Root Cause Analysis & Remediation Agent
+│   ├── rag/              # RAG pipeline components
+│   │   ├── embeddings.py      # Embedding service
+│   │   ├── document_processor.py  # Document processing
+│   │   └── vector_store.py    # Vector store integration
 │   ├── models.py          # Pydantic models for message contracts
 │   ├── tools.py           # Capability adapters
 │   ├── context_store.py   # Shared context store
 │   ├── orchestrator.py    # Pipeline orchestration
 │   └── configs.py        # Configuration
 ├── apis/                  # FastAPI application
-│   └── main.py           # API server and routes
-├── tests/                 # Test suite
-├── deploy/               # Deployment configurations
-│   └── helm/            # Helm charts
-├── docker/              # Docker configurations
-├── docs/                # Documentation
-└── pyproject.toml       # Project metadata and dependencies
+│   ├── main.py           # API server and routes
+│   └── documents.py      # Document management API
+├── dashboard/            # React web dashboard
+│   ├── src/             # Source code
+│   │   ├── pages/       # Page components
+│   │   ├── components/  # Reusable components
+│   │   ├── api/         # API client
+│   │   └── types/       # TypeScript types
+│   └── README.md        # Dashboard documentation
+├── tests/                # Test suite
+├── deploy/              # Deployment configurations
+│   └── helm/           # Helm charts
+├── docker/             # Docker configurations
+├── docs/               # Documentation
+└── pyproject.toml      # Project metadata and dependencies
 ```
 
 ### Running Tests
@@ -248,6 +281,38 @@ Key configuration options in `deploy/helm/values.yaml`:
 
 **Important Policy Note**: By default, OpsSage requires manual approval for all remediation actions. To enable automatic remediation, update `policy.allowAutoRemediate` to `true` in your Helm values. However, this is not recommended for production environments without additional safeguards.
 
+## Knowledge Base & RAG
+
+OpsSage includes a complete RAG (Retrieval-Augmented Generation) pipeline for managing and retrieving knowledge:
+
+### Uploading Documents
+
+```bash
+# Upload a runbook
+curl -X POST http://localhost:8000/api/v1/documents/upload \
+  -F "file=@runbook.md" \
+  -F "doc_type=playbook" \
+  -F "category=database"
+
+# Supported formats: TXT, MD, PDF, DOCX, JSON
+```
+
+### Searching Documents
+
+```bash
+curl -X POST http://localhost:8000/api/v1/documents/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "how to troubleshoot high CPU",
+    "collection": "playbooks",
+    "top_k": 5
+  }'
+```
+
+The KREA agent automatically searches this knowledge base during incident analysis to provide relevant context and remediation suggestions.
+
+For detailed information, see the [RAG Guide](docs/RAG_GUIDE.md).
+
 ## API Documentation
 
 Once the server is running, interactive API documentation is available at:
@@ -257,13 +322,24 @@ Once the server is running, interactive API documentation is available at:
 
 ### Endpoints
 
+#### Core API
 - `GET /` - Health check
 - `GET /api/v1/health` - Detailed health status
 - `GET /api/v1/readiness` - Readiness probe
+
+#### Incident Management
 - `POST /api/v1/alerts` - Ingest an alert
 - `GET /api/v1/incidents` - List incidents
 - `GET /api/v1/incidents/{id}` - Get incident details
 - `DELETE /api/v1/incidents/{id}` - Delete incident
+
+#### Document Management (RAG)
+- `POST /api/v1/documents/upload` - Upload document to knowledge base
+- `POST /api/v1/documents/search` - Search documents semantically
+- `GET /api/v1/documents/list` - List documents
+- `GET /api/v1/documents/{id}` - Get document by ID
+- `DELETE /api/v1/documents/{id}` - Delete document
+- `GET /api/v1/documents/stats/{collection}` - Get collection statistics
 
 ## Extending OpsSage
 

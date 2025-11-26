@@ -226,6 +226,87 @@ class MockKnowledgeAdapter(KnowledgeAdapter):
         ]
 
 
+class RealKnowledgeAdapter(KnowledgeAdapter):
+    """Real implementation using vector store."""
+
+    def __init__(self):
+        """Initialize with lazy loading of vector store."""
+        self._vector_store = None
+
+    @property
+    def vector_store(self):
+        """Lazy load vector store on first access."""
+        if self._vector_store is None:
+            from sages.rag import get_vector_store
+
+            self._vector_store = get_vector_store()
+        return self._vector_store
+
+    async def vector_search(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+        """Perform vector similarity search on knowledge base."""
+        results = self.vector_store.search(
+            query=query, collection_name="documents", top_k=top_k
+        )
+
+        formatted_results = []
+        for result in results:
+            metadata = result["metadata"]
+            formatted_results.append(
+                {
+                    "source_id": result["id"],
+                    "title": metadata.get("filename", "Unknown"),
+                    "excerpt": result["document"][:500],  # First 500 chars
+                    "relevance": result["relevance"],
+                    "metadata": metadata,
+                }
+            )
+
+        return formatted_results
+
+    async def document_lookup(self, doc_id: str) -> dict[str, Any]:
+        """Look up a specific document."""
+        doc = self.vector_store.get_document(
+            document_id=doc_id, collection_name="documents"
+        )
+
+        if doc is None:
+            return {
+                "source_id": doc_id,
+                "title": "Not Found",
+                "content": "Document not found in knowledge base",
+            }
+
+        metadata = doc["metadata"]
+        return {
+            "source_id": doc["id"],
+            "title": metadata.get("filename", "Unknown"),
+            "content": doc["document"],
+            "metadata": metadata,
+        }
+
+    async def playbook_query(self, keywords: list[str]) -> list[dict[str, Any]]:
+        """Query runbooks and playbooks."""
+        query = " ".join(keywords)
+        results = self.vector_store.search(
+            query=query, collection_name="playbooks", top_k=5
+        )
+
+        formatted_results = []
+        for result in results:
+            metadata = result["metadata"]
+            formatted_results.append(
+                {
+                    "source_id": result["id"],
+                    "title": metadata.get("filename", "Unknown"),
+                    "content": result["document"],
+                    "relevance": result["relevance"],
+                    "metadata": metadata,
+                }
+            )
+
+        return formatted_results
+
+
 class MockClusterStateAdapter(ClusterStateAdapter):
     """Mock implementation of ClusterStateAdapter for testing."""
 
@@ -355,6 +436,7 @@ def vector_search_tool(
     ctx: ToolContext,
     query: str,
     top_k: int = 5,
+    use_real: bool = True,
 ) -> str:
     """
     Search the knowledge base using vector similarity.
@@ -362,14 +444,23 @@ def vector_search_tool(
     Args:
         query: Search query describing the problem or topic
         top_k: Number of top results to return (default: 5)
+        use_real: Use real vector store (True) or mock data (False)
 
     Returns:
         JSON string with knowledge base results
     """
     import asyncio
     import json
+    import os
 
-    adapter = MockKnowledgeAdapter()
+    # Check environment variable for adapter type
+    use_real_adapter = os.getenv("USE_REAL_KNOWLEDGE_ADAPTER", "true").lower() == "true"
+
+    if use_real_adapter and use_real:
+        adapter = RealKnowledgeAdapter()
+    else:
+        adapter = MockKnowledgeAdapter()
+
     results = asyncio.run(adapter.vector_search(query, top_k))
     return json.dumps(results, indent=2)
 
@@ -377,20 +468,29 @@ def vector_search_tool(
 def document_lookup_tool(
     ctx: ToolContext,
     doc_id: str,
+    use_real: bool = True,
 ) -> str:
     """
     Look up a specific document by ID.
 
     Args:
         doc_id: Document identifier
+        use_real: Use real vector store (True) or mock data (False)
 
     Returns:
         JSON string with document content
     """
     import asyncio
     import json
+    import os
 
-    adapter = MockKnowledgeAdapter()
+    use_real_adapter = os.getenv("USE_REAL_KNOWLEDGE_ADAPTER", "true").lower() == "true"
+
+    if use_real_adapter and use_real:
+        adapter = RealKnowledgeAdapter()
+    else:
+        adapter = MockKnowledgeAdapter()
+
     result = asyncio.run(adapter.document_lookup(doc_id))
     return json.dumps(result, indent=2)
 
@@ -398,20 +498,29 @@ def document_lookup_tool(
 def playbook_query_tool(
     ctx: ToolContext,
     keywords: str,
+    use_real: bool = True,
 ) -> str:
     """
     Query runbooks and playbooks.
 
     Args:
         keywords: Comma-separated keywords to search for
+        use_real: Use real vector store (True) or mock data (False)
 
     Returns:
         JSON string with playbook results
     """
     import asyncio
     import json
+    import os
 
-    adapter = MockKnowledgeAdapter()
+    use_real_adapter = os.getenv("USE_REAL_KNOWLEDGE_ADAPTER", "true").lower() == "true"
+
+    if use_real_adapter and use_real:
+        adapter = RealKnowledgeAdapter()
+    else:
+        adapter = MockKnowledgeAdapter()
+
     keyword_list = [k.strip() for k in keywords.split(",")]
     results = asyncio.run(adapter.playbook_query(keyword_list))
     return json.dumps(results, indent=2)
