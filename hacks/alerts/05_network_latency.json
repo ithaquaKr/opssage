@@ -1,0 +1,24 @@
+{
+  "alert_name": "HighNetworkLatency",
+  "severity": "warning",
+  "message": "High network latency detected between frontend-service and auth-service. P95 latency is 2500ms.",
+  "labels": {
+    "namespace": "production",
+    "service": "frontend-service",
+    "target_service": "auth-service",
+    "severity": "warning",
+    "alert_type": "network_performance"
+  },
+  "annotations": {
+    "summary": "High latency in service-to-service communication",
+    "description": "Network latency between frontend and auth service has increased significantly, affecting user experience",
+    "current_p95": "2500ms",
+    "normal_p95": "150ms",
+    "current_p99": "5200ms",
+    "affected_endpoints": "/api/login, /api/verify-token, /api/refresh",
+    "impact": "User login delays, session timeouts",
+    "runbook_url": "https://wiki.company.com/runbooks/high-latency"
+  },
+  "firing_condition": "histogram_quantile(0.95, http_request_duration_seconds{service=\"frontend\", target=\"auth-service\"}) > 1.0",
+  "timestamp": "2025-12-01T00:20:00Z"
+}

@@ -1,0 +1,30 @@
+{
+  "alert_name": "DeploymentFailed",
+  "severity": "critical",
+  "message": "Deployment of user-api v2.5.0 failed. New pods failing to start due to ImagePullBackOff.",
+  "labels": {
+    "namespace": "production",
+    "service": "user-api",
+    "deployment": "user-api",
+    "version": "v2.5.0",
+    "severity": "critical",
+    "alert_type": "deployment_failure"
+  },
+  "annotations": {
+    "summary": "Deployment rollout failed - image pull error",
+    "description": "New deployment of user-api v2.5.0 is failing because pods cannot pull the container image",
+    "desired_replicas": "5",
+    "current_replicas": "3",
+    "updated_replicas": "0",
+    "ready_replicas": "3",
+    "image": "registry.company.com/user-api:v2.5.0",
+    "error_reason": "ImagePullBackOff",
+    "error_message": "Failed to pull image: manifest for registry.company.com/user-api:v2.5.0 not found",
+    "deployment_started": "2025-12-01T00:28:00Z",
+    "rollback_recommended": "true",
+    "impact": "Unable to deploy new version, running on old v2.4.8",
+    "runbook_url": "https://wiki.company.com/runbooks/deployment-failures"
+  },
+  "firing_condition": "kube_deployment_status_condition{deployment=\"user-api\", condition=\"Progressing\", status=\"false\"} == 1",
+  "timestamp": "2025-12-01T00:35:00Z"
+}

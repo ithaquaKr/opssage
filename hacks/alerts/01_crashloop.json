@@ -1,0 +1,21 @@
+{
+  "alert_name": "PodCrashLoopBackOff",
+  "severity": "critical",
+  "message": "Pod payment-service-7d8f9b5c-xyz in namespace production is in CrashLoopBackOff state. Container restarted 15 times in last 10 minutes.",
+  "labels": {
+    "namespace": "production",
+    "service": "payment-service",
+    "pod": "payment-service-7d8f9b5c-xyz",
+    "node": "k8s-worker-03",
+    "container": "payment-api",
+    "severity": "critical"
+  },
+  "annotations": {
+    "summary": "Payment service pod is crash looping",
+    "description": "The payment-service pod has been restarting continuously, indicating a critical application or configuration issue",
+    "runbook_url": "https://wiki.company.com/runbooks/payment-service",
+    "dashboard": "https://grafana.company.com/d/payment-service"
+  },
+  "firing_condition": "kube_pod_container_status_restarts_total{namespace=\"production\", pod=~\"payment-service.*\"} > 10",
+  "timestamp": "2025-12-01T00:00:00Z"
+}

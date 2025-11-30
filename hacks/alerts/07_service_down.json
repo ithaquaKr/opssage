@@ -1,0 +1,25 @@
+{
+  "alert_name": "ServiceUnavailable",
+  "severity": "critical",
+  "message": "Notification service is unavailable. All 3 replicas are not ready. Health check failing.",
+  "labels": {
+    "namespace": "production",
+    "service": "notification-service",
+    "deployment": "notification-service",
+    "severity": "critical",
+    "alert_type": "service_down"
+  },
+  "annotations": {
+    "summary": "Notification service is completely down",
+    "description": "All replicas of notification service are failing health checks, service is unavailable",
+    "desired_replicas": "3",
+    "ready_replicas": "0",
+    "available_replicas": "0",
+    "health_check_endpoint": "/health",
+    "last_error": "Connection refused to Redis cache",
+    "impact": "Email and SMS notifications not being sent",
+    "runbook_url": "https://wiki.company.com/runbooks/service-unavailable"
+  },
+  "firing_condition": "kube_deployment_status_replicas_available{deployment=\"notification-service\"} == 0",
+  "timestamp": "2025-12-01T00:30:00Z"
+}

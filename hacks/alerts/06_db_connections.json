@@ -1,0 +1,25 @@
+{
+  "alert_name": "DatabaseConnectionPoolExhausted",
+  "severity": "critical",
+  "message": "PostgreSQL connection pool exhausted for order-service. 95/100 connections in use.",
+  "labels": {
+    "namespace": "production",
+    "service": "order-service",
+    "database": "orders-db",
+    "database_instance": "postgres-primary",
+    "severity": "critical"
+  },
+  "annotations": {
+    "summary": "Database connection pool near exhaustion",
+    "description": "Order service is using 95% of available database connections, indicating potential connection leak or traffic spike",
+    "current_connections": "95",
+    "max_connections": "100",
+    "idle_connections": "2",
+    "active_connections": "93",
+    "waiting_requests": "47",
+    "impact": "Degraded order processing, potential request timeouts",
+    "runbook_url": "https://wiki.company.com/runbooks/db-connection-pool"
+  },
+  "firing_condition": "db_connection_pool_usage_percent{service=\"order-service\"} > 90",
+  "timestamp": "2025-12-01T00:25:00Z"
+}

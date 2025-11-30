@@ -1,0 +1,24 @@
+{
+  "alert_name": "NodeDiskPressure",
+  "severity": "warning",
+  "message": "Node k8s-worker-02 disk usage at 92%. Ephemeral storage is running low.",
+  "labels": {
+    "namespace": "default",
+    "node": "k8s-worker-02",
+    "cluster": "production-us-west-2",
+    "severity": "warning",
+    "alert_type": "disk_pressure"
+  },
+  "annotations": {
+    "summary": "Node experiencing disk pressure",
+    "description": "Node k8s-worker-02 is running low on disk space, which may cause pod evictions",
+    "current_usage": "92%",
+    "threshold": "85%",
+    "available_space": "8Gi",
+    "total_space": "100Gi",
+    "top_consumers": "logging-agent (45Gi), cache-pods (30Gi)",
+    "runbook_url": "https://wiki.company.com/runbooks/disk-pressure"
+  },
+  "firing_condition": "node_filesystem_usage_percent{node=\"k8s-worker-02\"} > 85",
+  "timestamp": "2025-12-01T00:15:00Z"
+}

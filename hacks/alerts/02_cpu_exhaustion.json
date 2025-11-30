@@ -1,0 +1,22 @@
+{
+  "alert_name": "NodeCPUExhaustion",
+  "severity": "critical",
+  "message": "Node k8s-worker-05 CPU usage at 98% for last 15 minutes. Multiple pods are being throttled.",
+  "labels": {
+    "namespace": "production",
+    "node": "k8s-worker-05",
+    "cluster": "production-us-west-2",
+    "severity": "critical",
+    "alert_type": "resource_exhaustion"
+  },
+  "annotations": {
+    "summary": "Node CPU exhaustion causing pod throttling",
+    "description": "High CPU usage on k8s-worker-05 is causing performance degradation across multiple services",
+    "affected_pods": "user-api, order-service, notification-worker",
+    "current_value": "98.5%",
+    "threshold": "90%",
+    "runbook_url": "https://wiki.company.com/runbooks/node-cpu-exhaustion"
+  },
+  "firing_condition": "node_cpu_usage_percent{node=\"k8s-worker-05\"} > 90",
+  "timestamp": "2025-12-01T00:05:00Z"
+}

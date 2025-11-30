@@ -32,6 +32,7 @@ from sages.models import (
     PrimaryContextPackage,
     RCARAOutput,
 )
+from sages.notifications import get_notifier
 from sages.subagents.aica import create_aica_agent
 from sages.subagents.krea import create_krea_agent
 from sages.subagents.rcara import create_rcara_agent
@@ -51,6 +52,7 @@ class IncidentOrchestrator:
         self.krea: Agent = create_krea_agent()
         self.rcara: Agent = create_rcara_agent()
         self.context_store = get_context_store()
+        self.notifier = get_notifier()
 
         # Setup session service and runners
         self.session_service = InMemorySessionService()
@@ -85,9 +87,15 @@ class IncidentOrchestrator:
         Raises:
             Exception: If any stage of the analysis fails
         """
+        import time
+
         # Create incident in context store
         incident_id = await self.context_store.create_incident(alert)
         logger.info(f"Created incident {incident_id} for alert {alert.alert_name}")
+
+        # Send start notification
+        start_time = time.time()
+        await self.notifier.send_incident_start(incident_id, alert)
 
         try:
             # Stage 1: AICA - Alert Ingestion & Context
@@ -114,11 +122,24 @@ class IncidentOrchestrator:
             )
             logger.info(f"RCARA completed for incident {incident_id}")
 
+            # Send completion notification
+            duration = time.time() - start_time
+            await self.notifier.send_incident_complete(
+                incident_id, alert, diagnostic_report, duration
+            )
+
             return incident_id, diagnostic_report
 
         except Exception as e:
             logger.error(f"Error analyzing incident {incident_id}: {e}")
             await self.context_store.update_status(incident_id, "failed")
+
+            # Send error notification
+            duration = time.time() - start_time
+            await self.notifier.send_incident_error(
+                incident_id, alert, str(e), duration
+            )
+
             raise
 
     async def _run_aica(self, alert: AlertInput) -> PrimaryContextPackage:
