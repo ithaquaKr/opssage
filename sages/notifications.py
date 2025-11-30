@@ -28,6 +28,7 @@ class TelegramNotifier:
         config = get_config()
         self.bot_token = bot_token or config.get("telegram.bot_token")
         self.chat_id = chat_id or config.get("telegram.chat_id")
+        self.dashboard_url = config.get("telegram.dashboard_url", "http://localhost:3000")
         self.enabled = config.get("telegram.enabled", True) and bool(self.bot_token and self.chat_id)
 
         if not self.enabled:
@@ -78,18 +79,26 @@ class TelegramNotifier:
         Returns:
             True if notification was sent successfully
         """
+        incident_url = f"{self.dashboard_url}/incidents/{incident_id}"
+
+        # Truncate message if too long
+        msg = alert.message
+        if len(msg) > 150:
+            msg = msg[:147] + "..."
+
         message = f"""
 🚨 *Incident Analysis Started*
 
-*Incident ID:* `{incident_id}`
 *Alert:* {alert.alert_name}
 *Severity:* {alert.severity.upper()}
 *Namespace:* {alert.labels.get('namespace', 'N/A')}
 *Service:* {alert.labels.get('service', 'N/A')}
 
-*Message:* {alert.message}
+*Message:* {msg}
 
 ⏳ Analysis in progress...
+
+[View Full Details]({incident_url})
 """
         return await self.send_message(message.strip())
 
@@ -112,36 +121,36 @@ class TelegramNotifier:
         Returns:
             True if notification was sent successfully
         """
+        incident_url = f"{self.dashboard_url}/incidents/{incident_id}"
+
         # Format confidence score as percentage
         confidence_pct = int(diagnostic_report.confidence_score * 100)
 
         # Truncate root cause if too long
         root_cause = diagnostic_report.root_cause
-        if len(root_cause) > 200:
-            root_cause = root_cause[:197] + "..."
+        if len(root_cause) > 150:
+            root_cause = root_cause[:147] + "..."
 
-        # Format actions
-        short_term = "\n".join(
-            f"  • {action}" for action in diagnostic_report.recommended_remediation.short_term_actions[:3]
-        )
-        if len(diagnostic_report.recommended_remediation.short_term_actions) > 3:
-            short_term += f"\n  • ...and {len(diagnostic_report.recommended_remediation.short_term_actions) - 3} more"
+        # Format top 2 immediate actions only
+        actions = diagnostic_report.recommended_remediation.short_term_actions[:2]
+        short_term = "\n".join(f"  • {action}" for action in actions)
+        remaining = len(diagnostic_report.recommended_remediation.short_term_actions) - 2
+        if remaining > 0:
+            short_term += f"\n  • +{remaining} more action{'s' if remaining > 1 else ''}"
 
         message = f"""
 ✅ *Incident Analysis Complete*
 
-*Incident ID:* `{incident_id}`
 *Alert:* {alert.alert_name}
 *Duration:* {duration_seconds:.1f}s
 
-🎯 *Root Cause* (Confidence: {confidence_pct}%):
+🎯 *Root Cause* ({confidence_pct}%):
 {root_cause}
 
-🔧 *Immediate Actions:*
+🔧 *Top Actions:*
 {short_term}
 
-📊 *Analysis Steps:* {len(diagnostic_report.reasoning_steps)}
-📝 *Evidence Items:* {len(diagnostic_report.supporting_evidence)}
+[📊 View Full Report]({incident_url})
 """
         return await self.send_message(message.strip())
 
@@ -164,15 +173,16 @@ class TelegramNotifier:
         Returns:
             True if notification was sent successfully
         """
+        incident_url = f"{self.dashboard_url}/incidents/{incident_id}"
+
         # Truncate error if too long
         error_msg = str(error)
-        if len(error_msg) > 300:
-            error_msg = error_msg[:297] + "..."
+        if len(error_msg) > 200:
+            error_msg = error_msg[:197] + "..."
 
         message = f"""
 ❌ *Incident Analysis Failed*
 
-*Incident ID:* `{incident_id}`
 *Alert:* {alert.alert_name}
 *Duration:* {duration_seconds:.1f}s
 
@@ -181,7 +191,7 @@ class TelegramNotifier:
 {error_msg}
 ```
 
-Please check the logs for more details.
+[View Incident Details]({incident_url})
 """
         return await self.send_message(message.strip())
 

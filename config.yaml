@@ -17,8 +17,9 @@ models:
 # Telegram Notifications
 telegram:
   enabled: true
-  bot_token: ${TELEGRAM_BOT_TOKEN} # Set via environment variable
-  chat_id: ${TELEGRAM_CHAT_ID} # Set via environment variable
+  bot_token: ${TELEGRAM_BOT_TOKEN}  # Set via environment variable
+  chat_id: ${TELEGRAM_CHAT_ID}      # Set via environment variable
+  dashboard_url: http://localhost:3000  # Dashboard URL for incident links
 
 # RAG Knowledge Base System
 rag:

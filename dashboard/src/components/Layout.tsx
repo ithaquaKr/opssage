@@ -3,10 +3,12 @@ import {
   FolderOpen,
   Search,
   Activity,
+  AlertCircle,
 } from 'lucide-react'
 
 const navigation = [
-  { name: 'Documents', href: '/', icon: FolderOpen },
+  { name: 'Incidents', href: '/incidents', icon: AlertCircle },
+  { name: 'Documents', href: '/documents', icon: FolderOpen },
   { name: 'Search', href: '/search', icon: Search },
 ]
 
@@ -23,7 +25,10 @@ export default function Layout() {
         </div>
         <nav className="mt-6 px-3">
           {navigation.map((item) => {
-            const isActive = location.pathname === item.href
+            const isActive =
+              item.href === '/incidents'
+                ? location.pathname === '/' || location.pathname.startsWith('/incidents')
+                : location.pathname === item.href || location.pathname.startsWith(item.href + '/')
             const Icon = item.icon
             return (
               <Link
