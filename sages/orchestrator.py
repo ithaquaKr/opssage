@@ -5,9 +5,22 @@ Coordinates the flow between AICA, KREA, and RCARA agents.
 
 import json
 import logging
+import os
+import uuid
 from typing import Any
 
+from google.adk import Runner
 from google.adk.agents import Agent
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
+
+from sages.config import get_config
+
+# Set GOOGLE_API_KEY from config
+config = get_config()
+gemini_api_key = config.get("models.gemini_api_key")
+if gemini_api_key and not os.getenv("GOOGLE_API_KEY"):
+    os.environ["GOOGLE_API_KEY"] = gemini_api_key
 
 from sages.context_store import get_context_store
 from sages.models import (
@@ -38,6 +51,24 @@ class IncidentOrchestrator:
         self.krea: Agent = create_krea_agent()
         self.rcara: Agent = create_rcara_agent()
         self.context_store = get_context_store()
+
+        # Setup session service and runners
+        self.session_service = InMemorySessionService()
+        self.aica_runner = Runner(
+            app_name="agents",
+            agent=self.aica,
+            session_service=self.session_service,
+        )
+        self.krea_runner = Runner(
+            app_name="agents",
+            agent=self.krea,
+            session_service=self.session_service,
+        )
+        self.rcara_runner = Runner(
+            app_name="agents",
+            agent=self.rcara,
+            session_service=self.session_service,
+        )
 
     async def analyze_incident(
         self, alert: AlertInput
@@ -109,11 +140,42 @@ Alert:
 
 Use the available tools to gather metrics, logs, and events as needed to build a complete picture of the incident."""
 
-        # Run AICA agent
-        response = await self.aica.run_async(prompt)
+        # Create user message
+        user_message = types.Content(
+            role="user",
+            parts=[types.Part(text=prompt)]
+        )
+
+        # Create session and run AICA agent
+        user_id = "sage_system"
+        session_id = str(uuid.uuid4())
+        await self.session_service.create_session(
+            app_name="agents",
+            user_id=user_id,
+            session_id=session_id,
+        )
+        final_response = None
+
+        async for event in self.aica_runner.run_async(
+            user_id=user_id,
+            session_id=session_id,
+            new_message=user_message,
+        ):
+            if event.is_final_response():
+                final_response = event
+                break
+
+        if final_response is None or not final_response.content:
+            raise ValueError("No final response received from AICA agent")
+
+        # Extract text content from response
+        response_text = ""
+        for part in final_response.content.parts:
+            if hasattr(part, 'text') and part.text:
+                response_text += part.text
 
         # Parse and validate response
-        output_data = self._extract_json_from_response(response.content)
+        output_data = self._extract_json_from_response(response_text)
         aica_output = AICAOutput.model_validate(output_data)
 
         return aica_output.primary_context_package
@@ -140,11 +202,42 @@ Primary Context Package:
 Use the available tools to search for relevant documentation, playbooks, and past incidents.
 Focus on retrieving actionable knowledge that will help with root cause analysis."""
 
-        # Run KREA agent
-        response = await self.krea.run_async(prompt)
+        # Create user message
+        user_message = types.Content(
+            role="user",
+            parts=[types.Part(text=prompt)]
+        )
+
+        # Create session and run KREA agent
+        user_id = "sage_system"
+        session_id = str(uuid.uuid4())
+        await self.session_service.create_session(
+            app_name="agents",
+            user_id=user_id,
+            session_id=session_id,
+        )
+        final_response = None
+
+        async for event in self.krea_runner.run_async(
+            user_id=user_id,
+            session_id=session_id,
+            new_message=user_message,
+        ):
+            if event.is_final_response():
+                final_response = event
+                break
+
+        if final_response is None or not final_response.content:
+            raise ValueError("No final response received from KREA agent")
+
+        # Extract text content from response
+        response_text = ""
+        for part in final_response.content.parts:
+            if hasattr(part, 'text') and part.text:
+                response_text += part.text
 
         # Parse and validate response
-        output_data = self._extract_json_from_response(response.content)
+        output_data = self._extract_json_from_response(response_text)
         krea_output = KREAOutput.model_validate(output_data)
 
         return krea_output.enhanced_context_package
@@ -178,11 +271,42 @@ Enhanced Context Package:
 
 Use structured reasoning to identify the root cause and provide specific, actionable remediation recommendations."""
 
-        # Run RCARA agent
-        response = await self.rcara.run_async(prompt)
+        # Create user message
+        user_message = types.Content(
+            role="user",
+            parts=[types.Part(text=prompt)]
+        )
+
+        # Create session and run RCARA agent
+        user_id = "sage_system"
+        session_id = str(uuid.uuid4())
+        await self.session_service.create_session(
+            app_name="agents",
+            user_id=user_id,
+            session_id=session_id,
+        )
+        final_response = None
+
+        async for event in self.rcara_runner.run_async(
+            user_id=user_id,
+            session_id=session_id,
+            new_message=user_message,
+        ):
+            if event.is_final_response():
+                final_response = event
+                break
+
+        if final_response is None or not final_response.content:
+            raise ValueError("No final response received from RCARA agent")
+
+        # Extract text content from response
+        response_text = ""
+        for part in final_response.content.parts:
+            if hasattr(part, 'text') and part.text:
+                response_text += part.text
 
         # Parse and validate response
-        output_data = self._extract_json_from_response(response.content)
+        output_data = self._extract_json_from_response(response_text)
         rcara_output = RCARAOutput.model_validate(output_data)
 
         return rcara_output.incident_diagnostic_report

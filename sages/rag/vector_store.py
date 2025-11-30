@@ -10,6 +10,7 @@ from typing import Any
 import chromadb
 from chromadb.config import Settings
 
+from sages.config import get_config
 from sages.rag.embeddings import get_embedding_service
 
 logger = logging.getLogger(__name__)
@@ -21,13 +22,17 @@ class VectorStore:
     Uses ChromaDB as the underlying vector database.
     """
 
-    def __init__(self, persist_directory: str = "./data/chromadb") -> None:
+    def __init__(self, persist_directory: str | None = None) -> None:
         """
         Initialize the vector store.
 
         Args:
-            persist_directory: Directory to persist the vector database
+            persist_directory: Directory to persist the vector database (uses config if not provided)
         """
+        if persist_directory is None:
+            config = get_config()
+            persist_directory = config.get("rag.chromadb_path", "./data/chromadb")
+
         self.persist_directory = Path(persist_directory)
         self.persist_directory.mkdir(parents=True, exist_ok=True)
 

@@ -7,8 +7,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Any
 
-from google.adk.tools import ToolContext
-
 # ============================================================================
 # Tool Interfaces (Abstract Base Classes)
 # ============================================================================
@@ -329,8 +327,7 @@ class MockClusterStateAdapter(ClusterStateAdapter):
 # ============================================================================
 
 
-def metrics_query_tool(
-    ctx: ToolContext,
+async def metrics_query_tool(
     metric_name: str,
     labels: str,
     time_range_minutes: int = 15,
@@ -346,7 +343,6 @@ def metrics_query_tool(
     Returns:
         JSON string with metric results
     """
-    import asyncio
     import json
 
     adapter = MockMetricsAdapter()
@@ -354,14 +350,11 @@ def metrics_query_tool(
     start_time = end_time - timedelta(minutes=time_range_minutes)
     labels_dict = json.loads(labels)
 
-    results = asyncio.run(
-        adapter.query_metrics(metric_name, labels_dict, start_time, end_time)
-    )
+    results = await adapter.query_metrics(metric_name, labels_dict, start_time, end_time)
     return json.dumps(results, indent=2)
 
 
-def log_search_tool(
-    ctx: ToolContext,
+async def log_search_tool(
     query: str,
     namespace: str,
     pod: str = "",
@@ -381,21 +374,17 @@ def log_search_tool(
     Returns:
         JSON string with log results
     """
-    import asyncio
     import json
 
     adapter = MockLogAdapter()
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(minutes=time_range_minutes)
 
-    results = asyncio.run(
-        adapter.search_logs(query, namespace, pod or None, start_time, end_time, limit)
-    )
+    results = await adapter.search_logs(query, namespace, pod or None, start_time, end_time, limit)
     return json.dumps(results, indent=2)
 
 
-def event_lookup_tool(
-    ctx: ToolContext,
+async def event_lookup_tool(
     namespace: str,
     resource_type: str = "",
     resource_name: str = "",
@@ -413,27 +402,23 @@ def event_lookup_tool(
     Returns:
         JSON string with event results
     """
-    import asyncio
     import json
 
     adapter = MockEventAdapter()
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(minutes=time_range_minutes)
 
-    results = asyncio.run(
-        adapter.lookup_events(
-            namespace,
-            resource_type or None,
-            resource_name or None,
-            start_time,
-            end_time,
-        )
+    results = await adapter.lookup_events(
+        namespace,
+        resource_type or None,
+        resource_name or None,
+        start_time,
+        end_time,
     )
     return json.dumps(results, indent=2)
 
 
-def vector_search_tool(
-    ctx: ToolContext,
+async def vector_search_tool(
     query: str,
     top_k: int = 5,
     use_real: bool = True,
@@ -449,7 +434,6 @@ def vector_search_tool(
     Returns:
         JSON string with knowledge base results
     """
-    import asyncio
     import json
     import os
 
@@ -461,12 +445,11 @@ def vector_search_tool(
     else:
         adapter = MockKnowledgeAdapter()
 
-    results = asyncio.run(adapter.vector_search(query, top_k))
+    results = await adapter.vector_search(query, top_k)
     return json.dumps(results, indent=2)
 
 
-def document_lookup_tool(
-    ctx: ToolContext,
+async def document_lookup_tool(
     doc_id: str,
     use_real: bool = True,
 ) -> str:
@@ -480,7 +463,6 @@ def document_lookup_tool(
     Returns:
         JSON string with document content
     """
-    import asyncio
     import json
     import os
 
@@ -491,12 +473,11 @@ def document_lookup_tool(
     else:
         adapter = MockKnowledgeAdapter()
 
-    result = asyncio.run(adapter.document_lookup(doc_id))
+    result = await adapter.document_lookup(doc_id)
     return json.dumps(result, indent=2)
 
 
-def playbook_query_tool(
-    ctx: ToolContext,
+async def playbook_query_tool(
     keywords: str,
     use_real: bool = True,
 ) -> str:
@@ -510,7 +491,6 @@ def playbook_query_tool(
     Returns:
         JSON string with playbook results
     """
-    import asyncio
     import json
     import os
 
@@ -522,12 +502,11 @@ def playbook_query_tool(
         adapter = MockKnowledgeAdapter()
 
     keyword_list = [k.strip() for k in keywords.split(",")]
-    results = asyncio.run(adapter.playbook_query(keyword_list))
+    results = await adapter.playbook_query(keyword_list)
     return json.dumps(results, indent=2)
 
 
-def verify_cluster_state_tool(
-    ctx: ToolContext,
+async def verify_cluster_state_tool(
     namespace: str,
     resource_type: str,
     resource_name: str,
@@ -543,11 +522,8 @@ def verify_cluster_state_tool(
     Returns:
         JSON string with current resource state
     """
-    import asyncio
     import json
 
     adapter = MockClusterStateAdapter()
-    result = asyncio.run(
-        adapter.verify_cluster_state(namespace, resource_type, resource_name)
-    )
+    result = await adapter.verify_cluster_state(namespace, resource_type, resource_name)
     return json.dumps(result, indent=2)

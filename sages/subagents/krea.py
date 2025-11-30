@@ -4,9 +4,9 @@ Responsible for retrieving relevant knowledge and enriching the context.
 """
 
 from google.adk.agents import Agent
-from google.adk.tools import agent_tool
+from google.adk.tools import FunctionTool
 
-from sages.configs import sage_configs
+from sages.config import get_config
 from sages.tools import (
     document_lookup_tool,
     playbook_query_tool,
@@ -47,24 +47,27 @@ You only perform **knowledge retrieval, relevance scoring, summarization, and en
     "primary_context_reference": {},
     "retrieved_knowledge": [
       {
-        "source_id": "",
-        "excerpt": "",
-        "relevance": 0.0
+        "source_id": "kb-001",
+        "excerpt": "Relevant excerpt text",
+        "relevance": 0.85
       }
     ],
-    "knowledge_summary": "",
+    "knowledge_summary": "Summary of retrieved knowledge",
     "contextual_enrichment": {
-      "failure_patterns": [],
-      "possible_causes": [],
-      "related_incidents": [],
-      "known_remediation_actions": []
+      "failure_patterns": ["Pattern 1", "Pattern 2"],
+      "possible_causes": ["Cause 1", "Cause 2"],
+      "related_incidents": ["Incident 1", "Incident 2"],
+      "known_remediation_actions": ["Action 1", "Action 2"]
     }
   }
 }
 ```
 
-Ensure your response is valid JSON matching this exact structure.
-The primary_context_reference field should contain the complete primary context package received from AICA."""
+**IMPORTANT**:
+- `failure_patterns`, `possible_causes`, `related_incidents`, and `known_remediation_actions` must be arrays of simple strings, NOT objects
+- `retrieved_knowledge` must be an array of objects with `source_id`, `excerpt`, and `relevance` fields
+- The primary_context_reference field should contain the complete primary context package received from AICA
+- Ensure your response is valid JSON matching this exact structure"""
 
 
 def create_krea_agent() -> Agent:
@@ -74,15 +77,16 @@ def create_krea_agent() -> Agent:
     Returns:
         Configured KREA Agent instance
     """
+    config = get_config()
     krea = Agent(
         name="krea",
-        model=sage_configs.worker_model,
+        model=config.get('models.worker_model'),
         description="Knowledge Retrieval & Enrichment Agent - Retrieves relevant knowledge and enriches context",
         instruction=KREA_SYSTEM_PROMPT,
         tools=[
-            agent_tool(vector_search_tool),
-            agent_tool(document_lookup_tool),
-            agent_tool(playbook_query_tool),
+            FunctionTool(vector_search_tool),
+            FunctionTool(document_lookup_tool),
+            FunctionTool(playbook_query_tool),
         ],
         output_key="krea_output",
     )

@@ -37,9 +37,10 @@ Thumbs.db
 *.log
 logs/
 
-# Environment variables
+# Environment variables and user config
 .env
 .env.*
+config.yaml  # User-specific config (use config.example.yaml as template)
 
 # Vector store data
 data/

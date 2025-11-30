@@ -88,9 +88,10 @@ skip = "./locust_env/*,uv.lock,.venv,./frontend,**/*.ipynb"
 pythonpath = "."
 asyncio_default_fixture_loop_scope = "function"
 
-# [build-system]
-# requires = ["uv_build>=0.8.14,<0.9.0"]
-# build-backend = "uv_build"
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
-# [tool.uv.build-backend]
-# module-root = ""
+[tool.setuptools.packages.find]
+include = ["sages*", "apis*"]
+exclude = ["tests*", "docs*", "scripts*", "dashboard*", "docker*", "data*"]

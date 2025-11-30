@@ -1,336 +1,380 @@
 # OpsSage
 
-**AI-Powered Incident Analysis & Remediation System**
+**Multi-Agent Incident Response System with RAG Knowledge Base**
 
-OpsSage is an intelligent system that automatically analyzes alerts, investigates incidents, and provides remediation recommendations for your infrastructure. It uses three AI agents working together to understand problems and suggest solutions.
-
----
-
-## What Does It Do?
-
-When an alert fires (high CPU, pod crash, etc.), OpsSage:
-
-1. **Investigates** - Collects logs, metrics, and events related to the alert
-2. **Analyzes** - Searches your documentation for similar issues
-3. **Diagnoses** - Determines the root cause with reasoning
-4. **Recommends** - Suggests both quick fixes and long-term solutions
-
-All automatically, in seconds.
+OpsSage is an AI-powered incident response system that analyzes alerts, retrieves relevant knowledge, and provides root cause analysis with remediation suggestions. It uses a multi-agent architecture (AICA → KREA → RCARA) and sends Telegram notifications.
 
 ---
 
-## Quick Example
+## 🚀 Quick Start
 
-**Input:** Alert about high CPU usage
+### 1. Set Environment Variables
 
-**Output:**
+```bash
+export GEMINI_API_KEY="your-gemini-api-key"
+export TELEGRAM_BOT_TOKEN="your-telegram-bot-token"
+export TELEGRAM_CHAT_ID="your-telegram-chat-id"
 ```
-Root Cause: Memory leak in api-server causing CPU spikes
-Confidence: 85%
 
-Quick Fixes:
-- Restart the api-server pod
-- Increase memory limits to 4Gi
+### 2. Start the System
 
-Long-Term Solutions:
-- Fix memory leak in application code
-- Add memory profiling
-- Set up automated alerts for memory growth
+```bash
+make start
 ```
+
+### 3. Access the System
+
+- **Dashboard**: <http://localhost:3000> (Upload & search documents)
+- **API Docs**: <http://localhost:8000/docs>
+- **ChromaDB**: <http://localhost:8001>
 
 ---
 
-## How It Works
+## 📦 What's Included
 
-OpsSage uses three specialized AI agents:
-
-```
-Alert → AICA → KREA → RCARA → Solution
-```
-
-1. **AICA** (Alert Analysis) - Understands the alert and gathers evidence
-2. **KREA** (Knowledge Search) - Finds relevant documentation and past incidents
-3. **RCARA** (Root Cause) - Diagnoses the problem and suggests fixes
+- **Multi-Agent System**: AICA (Alert Ingestion) → KREA (Knowledge Retrieval) → RCARA (Root Cause Analysis)
+- **RAG Knowledge Base**: Upload and search runbooks, documentation, and playbooks
+- **Document Management**: Web UI for uploading PDFs, Markdown, DOCX, and TXT files
+- **Telegram Notifications**: Real-time incident alerts and analysis results
+- **E2E Testing**: Complete test scenarios with Telegram integration
 
 ---
 
-## Getting Started
+## 📋 Use Cases
+
+### Use Case 1: Production System
+
+Run OpsSage to analyze incidents and send Telegram notifications:
+
+```bash
+# Start system
+make start
+
+# Upload runbooks via dashboard
+# Visit http://localhost:3000
+
+# System automatically:
+# 1. Receives alerts via API
+# 2. Retrieves relevant knowledge
+# 3. Analyzes root cause
+# 4. Sends Telegram notification
+```
+
+### Use Case 2: E2E Testing
+
+Test the complete pipeline with realistic scenarios:
+
+```bash
+# Run all test scenarios
+make test
+
+# Run specific scenario
+make test-scenario SCENARIO=scenario_1
+
+# Check Telegram for test notifications! 📱
+```
+
+Test scenarios include:
+
+- **Scenario 1**: Pod CrashLoopBackOff (misconfigured env var)
+- **Scenario 2**: Node CPU Exhaustion (resource saturation)
+- **Scenario 3**: Multi-Service Dependency Failure (cascading outage)
+
+---
+
+## 🛠️ Installation
 
 ### Prerequisites
 
-- Python 3.10+ (Python 3.13 recommended)
-- [uv](https://github.com/astral-sh/uv) package manager
-- Google Cloud account (for AI models)
+- Docker & Docker Compose
+- Python 3.10+
+- Node.js 18+ (for dashboard)
 
-### 5-Minute Setup
+### Install Dependencies
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/ithaquaKr/opssage.git
-cd opssage
-
-# 2. Install dependencies
-uv sync
-
-# 3. Set up credentials
-cp env.example .env
-# Edit .env and add your Google Cloud credentials
-
-# 4. Start the server
-source .venv/bin/activate
-uvicorn apis.main:app --reload
+make install
 ```
 
-The API will be available at `http://localhost:8000`
-
-**See [GETTING_STARTED.md](GETTING_STARTED.md) for detailed setup instructions.**
+See [SETUP.md](SETUP.md) for detailed setup instructions.
 
 ---
 
-## Usage
+## 📚 Configuration
 
-### Web Dashboard (Recommended)
+All configuration is in `config.yaml`:
 
-```bash
-cd dashboard
-npm install
-npm run dev
+```yaml
+system:
+    log_level: INFO
+
+models:
+    worker_model: gemini-1.5-flash
+    critic_model: gemini-1.5-pro
+    gemini_api_key: ${GEMINI_API_KEY}
+
+telegram:
+    enabled: true
+    bot_token: ${TELEGRAM_BOT_TOKEN}
+    chat_id: ${TELEGRAM_CHAT_ID}
+
+rag:
+    chromadb_path: ./data/chromadb
+    max_search_results: 5
 ```
 
-Access the dashboard at `http://localhost:3000` to:
-- Submit alerts through a form
-- View all incidents and their analysis
-- Upload documentation and runbooks
-- Search your knowledge base
+Secrets are read from environment variables for security.
 
-### API (For Integration)
+---
 
-Submit an alert:
+## 🎯 Common Tasks
+
+### Upload Documents to Knowledge Base
+
+**Via Dashboard:**
+
+```bash
+# Visit http://localhost:3000
+# Click "Upload Document" and select files
+```
+
+**Via API:**
+
+```bash
+make upload-doc DOC=runbook.pdf
+```
+
+**Via Command Line:**
+
+```bash
+curl -X POST http://localhost:8000/api/v1/documents \
+  -F "file=@runbook.pdf"
+```
+
+### Search Documents
+
+**Via Dashboard:**
+
+```bash
+# Visit http://localhost:3000/search
+# Enter your search query
+```
+
+**Via Command Line:**
+
+```bash
+make search-docs QUERY="pod crash loop"
+```
+
+### Send Test Alert
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/alerts \
   -H "Content-Type: application/json" \
   -d '{
-    "alert_name": "HighCPUUsage",
-    "severity": "critical",
-    "message": "CPU usage above 90%",
-    "labels": {
-      "service": "api-server",
-      "pod": "api-server-xyz"
-    }
+    "alert_name": "TestAlert",
+    "severity": "warning",
+    "message": "Test incident",
+    "labels": {},
+    "annotations": {},
+    "firing_condition": "test"
   }'
 ```
 
-Get analysis results:
+Check Telegram for the analysis result!
 
-```bash
-curl http://localhost:8000/api/v1/incidents/{incident_id}
+---
+
+## 📖 Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│  Alert Ingestion (AICA)                         │
+│  - Parse alert data                             │
+│  - Extract context                              │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│  Knowledge Retrieval (KREA)                     │
+│  - Search RAG knowledge base                    │
+│  - Retrieve relevant runbooks                   │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│  Root Cause Analysis (RCARA)                    │
+│  - Analyze evidence                             │
+│  - Identify root cause                          │
+│  - Suggest remediation                          │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│  Telegram Notification                          │
+│  - Send diagnostic report                       │
+│  - Include remediation steps                    │
+└─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Key Features
+## 🧪 Testing
 
-### 1. Intelligent Analysis
-- Automatic evidence collection from logs, metrics, and events
-- Root cause analysis with reasoning steps
-- Confidence scoring
+### Run All E2E Tests
 
-### 2. Knowledge Base
-- Upload your runbooks, playbooks, and documentation
-- Semantic search finds relevant info automatically
-- Supports TXT, MD, PDF, DOCX, JSON
+```bash
+make test
+```
 
-### 3. Web Dashboard
-- Modern React UI
-- Real-time incident tracking
-- Document management
-- Search interface
+### Run Specific Scenario
 
-### 4. Production Ready
-- Docker and Kubernetes deployment
-- Health checks and monitoring
-- Horizontal scaling
-- Prometheus metrics
+```bash
+make test-scenario SCENARIO=scenario_1
+```
+
+Tests verify:
+
+- ✅ Alert ingestion and parsing
+- ✅ Knowledge base retrieval
+- ✅ Root cause identification
+- ✅ Remediation suggestions
+- ✅ Telegram notifications sent
+
+See [tests/README.md](tests/README.md) for detailed testing documentation.
 
 ---
 
-## Deployment Options
+## 🐛 Troubleshooting
 
-### Development (Easiest)
+**Services not starting?**
+
 ```bash
-# Local Python server
-make run
+make logs  # Check service logs
+make status  # Check service status
 ```
 
-### Docker Compose (Recommended for Testing)
-```bash
-# Complete stack with monitoring
-make docker-up
-```
-Includes: Backend, Dashboard, ChromaDB, Prometheus, Grafana
+**Telegram notifications not working?**
 
-### Kubernetes (Production)
-```bash
-# Deploy with Helm
-helm install opssage ./deploy/helm
-```
+- Check `config.yaml` telegram settings
+- Verify `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set
+- Test bot with: `/start` message in Telegram
 
-**See deployment guides:**
-- [Docker Compose Guide](docs/DOCKER_COMPOSE.md)
-- [Kubernetes Guide](docs/KUBERNETES.md)
+**Knowledge base empty?**
+
+- Upload documents via dashboard (<http://localhost:3000>)
+- Or use: `make upload-doc DOC=your-file.pdf`
+
+**Tests failing?**
+
+- Ensure all environment variables are set
+- Upload relevant documents first
+- Check logs: `make logs`
 
 ---
 
-## Documentation
+## 🛑 Stop & Cleanup
 
-| Document | Description |
-|----------|-------------|
-| [GETTING_STARTED.md](GETTING_STARTED.md) | Detailed setup and first steps |
-| [USER_GUIDE.md](USER_GUIDE.md) | How to use OpsSage |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and components |
-| [API_REFERENCE.md](docs/API_REFERENCE.md) | Complete API documentation |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment options and configuration |
-| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributing and extending OpsSage |
+```bash
+# Stop services
+make stop
+
+# Clean cache
+make clean
+
+# Clean all data (WARNING: Deletes knowledge base!)
+make clean-data
+```
 
 ---
 
-## Project Structure
+## 📊 System Status
+
+```bash
+make status
+```
+
+Shows:
+
+- Running services
+- Health check status
+- API availability
+
+---
+
+## 🔧 Development
+
+### Start in Development Mode
+
+```bash
+make dev
+```
+
+Runs backend with hot reload and dashboard in dev mode.
+
+### Run Locally (without Docker)
+
+```bash
+python run.py
+```
+
+### Code Quality
+
+```bash
+make lint    # Run linters
+make format  # Format code
+```
+
+---
+
+## 📝 Project Structure
 
 ```
 opssage/
-├── sages/              # Core AI agents and logic
-│   ├── subagents/     # AICA, KREA, RCARA agents
-│   ├── rag/           # Knowledge base and search
-│   └── tools.py       # Tool adapters
-├── apis/              # FastAPI backend
-├── dashboard/         # React web UI
-├── deploy/            # Kubernetes and Helm charts
-├── tests/             # Test suite
-└── docs/              # Documentation
+├── config.yaml              # Main configuration
+├── run.py                   # Entry point
+├── docker-compose.yml       # Docker services
+├── Makefile                 # Common commands
+│
+├── sages/                   # Core agent system
+│   ├── orchestrator.py      # Multi-agent coordinator
+│   ├── subagents/           # AICA, KREA, RCARA
+│   ├── rag/                 # Knowledge base system
+│   ├── notifications.py     # Telegram integration
+│   └── config.py            # Configuration loader
+│
+├── apis/                    # FastAPI server
+│   ├── main.py              # API endpoints
+│   └── documents.py         # Document management
+│
+├── dashboard/               # React web UI
+│   └── src/
+│       ├── pages/
+│       │   ├── Documents.tsx    # Document management
+│       │   └── Search.tsx       # Document search
+│       └── components/
+│
+├── tests/                   # E2E test scenarios
+│   ├── test_scenarios.py    # Scenario definitions
+│   └── test_e2e_scenarios.py # Test implementation
+│
+└── scripts/                 # Utility scripts
+    └── run_e2e_tests.py     # Test runner
 ```
 
 ---
 
-## Common Tasks
+## 🤝 Contributing
 
-### Add Documentation
-```bash
-curl -X POST http://localhost:8000/api/v1/documents/upload \
-  -F "file=@runbook.md" \
-  -F "doc_type=playbook"
-```
+This is a simplified, production-ready version focused on two use cases:
 
-### List Incidents
-```bash
-curl http://localhost:8000/api/v1/incidents
-```
+1. Production incident response with Telegram notifications
+2. E2E testing with realistic scenarios
 
-### Run Tests
-```bash
-uv run pytest
-```
-
-### Check Logs
-```bash
-# Local
-tail -f logs/opssage.log
-
-# Docker
-docker logs opssage-backend
-
-# Kubernetes
-kubectl logs -f deployment/opssage
-```
+Keep it simple!
 
 ---
 
-## Technology Stack
+## 📄 License
 
-- **AI Framework**: Google ADK (Agent Development Kit)
-- **AI Models**: Google Gemini (via Vertex AI)
-- **Backend**: FastAPI (Python)
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Knowledge Base**: ChromaDB (vector database)
-- **Deployment**: Docker, Kubernetes, Helm
-
----
-
-## Configuration
-
-Key environment variables:
-
-```bash
-# Required
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
-GOOGLE_CLOUD_PROJECT=your-project-id
-
-# Optional
-CHROMADB_PATH=./data/chromadb
-LOG_LEVEL=INFO
-USE_REAL_KNOWLEDGE_ADAPTER=true
-```
-
-See [CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
-
----
-
-## Troubleshooting
-
-### Server won't start
-```bash
-# Check Python version
-python --version  # Should be 3.10+
-
-# Verify credentials
-echo $GOOGLE_APPLICATION_CREDENTIALS
-
-# Check dependencies
-uv sync
-```
-
-### No analysis results
-```bash
-# Ensure knowledge base has documents
-curl http://localhost:8000/api/v1/documents/list
-
-# Upload sample documentation
-curl -X POST http://localhost:8000/api/v1/documents/upload \
-  -F "file=@sample-runbook.md" \
-  -F "doc_type=playbook"
-```
-
-### Dashboard not connecting
-```bash
-# Check backend is running
-curl http://localhost:8000/api/v1/health
-
-# Verify proxy configuration in dashboard/vite.config.ts
-```
-
----
-
-## License
-
-Apache License 2.0
-
----
-
-## Support
-
-- **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/ithaquaKr/opssage/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/ithaquaKr/opssage/discussions)
-
----
-
-## What's Next?
-
-1. **[Get Started](GETTING_STARTED.md)** - Set up OpsSage
-2. **[User Guide](USER_GUIDE.md)** - Learn to use the system
-3. **[Upload Docs](docs/KNOWLEDGE_BASE.md)** - Add your runbooks
-4. **[Deploy](docs/DEPLOYMENT.md)** - Run in production
-
----
-
-**Built with ❤️ for SREs and DevOps teams**
+MIT License - See LICENSE file for details

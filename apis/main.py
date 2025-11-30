@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from apis.documents import router as documents_router
+from sages.config import get_config
 from sages.context_store import get_context_store
 from sages.models import AlertInput, IncidentContext
 from sages.orchestrator import create_orchestrator
@@ -37,9 +38,11 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+config = get_config()
+cors_origins = config.get("api.cors_origins", ["http://localhost:3000", "http://localhost:5173"])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

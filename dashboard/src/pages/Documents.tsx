@@ -92,7 +92,7 @@ export default function Documents() {
     }
   }
 
-  const columnDefs = [
+  const columnDefs: any[] = [
     {
       headerName: 'Filename',
       field: 'filename',
@@ -285,7 +285,6 @@ export default function Documents() {
               }}
               pagination={true}
               paginationPageSize={20}
-              loading={loading}
               overlayNoRowsTemplate="<span>No documents found. Upload some documents to get started.</span>"
             />
           </div>

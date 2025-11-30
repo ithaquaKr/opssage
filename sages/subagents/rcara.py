@@ -4,9 +4,9 @@ Responsible for performing causal reasoning and generating remediation recommend
 """
 
 from google.adk.agents import Agent
-from google.adk.tools import agent_tool
+from google.adk.tools import FunctionTool
 
-from sages.configs import sage_configs
+from sages.config import get_config
 from sages.tools import verify_cluster_state_tool
 
 # System prompt for RCARA as specified in IMPLEMENT.md
@@ -39,21 +39,38 @@ You must produce outputs that are logically structured, technically sound, and a
 ```json
 {
   "incident_diagnostic_report": {
-    "root_cause": "",
-    "reasoning_steps": [],
-    "supporting_evidence": [],
-    "confidence_score": 0.0,
+    "root_cause": "string describing the root cause",
+    "reasoning_steps": [
+      "Step 1: description",
+      "Step 2: description"
+    ],
+    "supporting_evidence": [
+      "Evidence 1: description",
+      "Evidence 2: description"
+    ],
+    "confidence_score": 0.85,
     "recommended_remediation": {
-      "short_term_actions": [],
-      "long_term_actions": []
+      "short_term_actions": [
+        "Action 1: description",
+        "Action 2: description"
+      ],
+      "long_term_actions": [
+        "Action 1: description",
+        "Action 2: description"
+      ]
     }
   }
 }
 ```
 
-Ensure your response is valid JSON matching this exact structure.
-Be specific and actionable in your recommendations.
-Confidence score should reflect the strength of evidence (0.0 = very uncertain, 1.0 = highly confident)."""
+**IMPORTANT**:
+- `reasoning_steps`, `supporting_evidence`, `short_term_actions`, and `long_term_actions` must be arrays of simple strings, NOT objects
+- Each string should be self-contained and descriptive
+- Do NOT use objects with fields like `step_id`, `action_id`, `description`, etc.
+- Just return plain string arrays as shown in the example above
+- Ensure your response is valid JSON matching this exact structure
+- Be specific and actionable in your recommendations
+- Confidence score should reflect the strength of evidence (0.0 = very uncertain, 1.0 = highly confident)"""
 
 
 def create_rcara_agent() -> Agent:
@@ -63,13 +80,14 @@ def create_rcara_agent() -> Agent:
     Returns:
         Configured RCARA Agent instance
     """
+    config = get_config()
     rcara = Agent(
         name="rcara",
-        model=sage_configs.critic_model,  # Use more capable model for reasoning
+        model=config.get('models.critic_model'),  # Use more capable model for reasoning
         description="Root Cause Analysis & Remediation Agent - Performs causal reasoning and generates remediation plans",
         instruction=RCARA_SYSTEM_PROMPT,
         tools=[
-            agent_tool(verify_cluster_state_tool),
+            FunctionTool(verify_cluster_state_tool),
         ],
         output_key="rcara_output",
     )

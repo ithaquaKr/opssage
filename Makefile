@@ -1,190 +1,169 @@
-.PHONY: help setup dev build test clean docker-up docker-down kind-setup kind-deploy kind-teardown lint format
+.PHONY: help install start stop logs test clean
 
 # Colors
 BLUE := \033[0;34m
 GREEN := \033[0;32m
 YELLOW := \033[1;33m
+RED := \033[0;31m
 NC := \033[0m # No Color
 
 help: ## Show this help message
-	@echo '$(BLUE)OpsSage - Multi-Agent Incident Analysis System$(NC)'
-	@echo ''
-	@echo 'Usage: make [target]'
-	@echo ''
-	@echo 'Available targets:'
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
+	@printf '$(BLUE)OpsSage - Multi-Agent Incident Response System$(NC)\n'
+	@printf '\n'
+	@printf '$(GREEN)Quick Start:$(NC)\n'
+	@printf '  1. Set environment variables:\n'
+	@printf '     export GEMINI_API_KEY="your-key"\n'
+	@printf '     export TELEGRAM_BOT_TOKEN="your-token"\n'
+	@printf '     export TELEGRAM_CHAT_ID="your-chat-id"\n'
+	@printf '  2. Run: make start\n'
+	@printf '  3. Access dashboard: http://localhost:3000\n'
+	@printf '\n'
+	@printf '$(GREEN)Available Commands:$(NC)\n'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(BLUE)%-15s$(NC) %s\n", $$1, $$2}'
 
-setup: ## Initial project setup
-	@echo '$(BLUE)Setting up development environment...$(NC)'
-	@./scripts/dev-setup.sh
+install: ## Install dependencies
+	@printf '$(BLUE)Installing dependencies...$(NC)\n'
+	@if ! command -v uv >/dev/null 2>&1; then \
+		printf '$(YELLOW)Installing uv...$(NC)\n'; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
+	@uv pip install -e .
+	@cd dashboard && pnpm install
+	@printf '$(GREEN)✓ Dependencies installed$(NC)\n'
 
-dev: ## Start local development servers
-	@echo '$(BLUE)Starting local development servers...$(NC)'
-	@echo 'Backend: http://localhost:8000'
-	@echo 'Dashboard: http://localhost:3000'
-	@trap 'kill 0' SIGINT; \
-	(cd dashboard && npm run dev) & \
-	uvicorn apis.main:app --reload
+start: ## Start the system with Docker Compose
+	@printf '$(BLUE)Starting OpsSage...$(NC)\n'
+	@if [ ! -f config.yaml ]; then \
+		printf '$(YELLOW)Creating config.yaml from example...$(NC)\n'; \
+		cp config.example.yaml config.yaml; \
+	fi
+	@docker-compose up -d
+	@printf '\n'
+	@printf '$(GREEN)✓ OpsSage is running!$(NC)\n'
+	@printf '\n'
+	@printf '  📊 Dashboard:  http://localhost:3000\n'
+	@printf '  📚 API Docs:   http://localhost:8000/docs\n'
+	@printf '  🗄️  ChromaDB:   http://localhost:8001\n'
+	@printf '\n'
+	@printf 'View logs: make logs\n'
+	@printf 'Stop system: make stop\n'
 
-build: ## Build Docker images
-	@echo '$(BLUE)Building Docker images...$(NC)'
-	docker-compose build
+start-local: ## Start backend locally (for development)
+	@printf '$(BLUE)Starting OpsSage locally...$(NC)\n'
+	@if [ ! -f config.yaml ]; then \
+		printf '$(RED)Error: config.yaml not found$(NC)\n'; \
+		printf 'Run: cp config.example.yaml config.yaml\n'; \
+		exit 1; \
+	fi
+	@python run.py
 
-test: ## Run tests
-	@echo '$(BLUE)Running tests...$(NC)'
-	@source .venv/bin/activate && pytest tests/ -v
+stop: ## Stop all services
+	@printf '$(BLUE)Stopping OpsSage...$(NC)\n'
+	@docker-compose down
+	@printf '$(GREEN)✓ Services stopped$(NC)\n'
 
-test-rag: ## Test RAG pipeline
-	@echo '$(BLUE)Testing RAG pipeline...$(NC)'
-	@python scripts/test_rag.py
+logs: ## View service logs
+	@docker-compose logs -f
 
-lint: ## Run linters
-	@echo '$(BLUE)Running linters...$(NC)'
-	@source .venv/bin/activate && \
-	ruff check sages apis tests && \
-	mypy sages
+restart: ## Restart all services
+	@printf '$(BLUE)Restarting OpsSage...$(NC)\n'
+	@docker-compose restart
+	@printf '$(GREEN)✓ Services restarted$(NC)\n'
 
-format: ## Format code
-	@echo '$(BLUE)Formatting code...$(NC)'
-	@source .venv/bin/activate && \
-	ruff format sages apis tests
+test: ## Run E2E tests
+	@printf '$(BLUE)Running E2E tests...$(NC)\n'
+	@printf '\n'
+	@printf '$(YELLOW)📱 Check your Telegram for test notifications!$(NC)\n'
+	@printf '\n'
+	@pytest tests/test_e2e_scenarios.py -v -s
+	@printf '\n'
+	@printf '$(GREEN)✓ Tests complete$(NC)\n'
 
-clean: ## Clean up build artifacts
-	@echo '$(BLUE)Cleaning up...$(NC)'
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
-	rm -rf build/ dist/
-	@echo '$(GREEN)Clean complete$(NC)'
+test-scenario: ## Run specific test scenario (use SCENARIO=scenario_1)
+	@if [ -z "$(SCENARIO)" ]; then \
+		printf '$(RED)Error: Please specify SCENARIO$(NC)\n'; \
+		printf 'Example: make test-scenario SCENARIO=scenario_1\n'; \
+		exit 1; \
+	fi
+	@printf '$(BLUE)Running scenario: $(SCENARIO)$(NC)\n'
+	@python scripts/run_e2e_tests.py --scenario $(SCENARIO) --verbose
 
-# Docker Compose targets
-docker-up: ## Start services with Docker Compose
-	@echo '$(BLUE)Starting Docker Compose services...$(NC)'
-	docker-compose up -d
-	@echo '$(GREEN)Services started$(NC)'
-	@echo 'Backend:   http://localhost:8000'
-	@echo 'Dashboard: http://localhost:3000'
-	@echo 'Grafana:   http://localhost:3001'
-	@echo ''
-	@echo 'View logs: make docker-logs'
+upload-doc: ## Upload document to knowledge base (use DOC=path/to/file)
+	@if [ -z "$(DOC)" ]; then \
+		printf '$(RED)Error: Please specify DOC=path/to/file$(NC)\n'; \
+		printf 'Example: make upload-doc DOC=runbook.pdf\n'; \
+		exit 1; \
+	fi
+	@printf '$(BLUE)Uploading document: $(DOC)$(NC)\n'
+	@curl -X POST http://localhost:8000/api/v1/documents \
+		-F "file=@$(DOC)" \
+		-H "Accept: application/json"
+	@printf '\n'
+	@printf '$(GREEN)✓ Document uploaded$(NC)\n'
 
-docker-down: ## Stop Docker Compose services
-	@echo '$(BLUE)Stopping Docker Compose services...$(NC)'
-	docker-compose down
+search-docs: ## Search knowledge base (use QUERY="your search")
+	@if [ -z "$(QUERY)" ]; then \
+		printf '$(RED)Error: Please specify QUERY$(NC)\n'; \
+		printf 'Example: make search-docs QUERY="pod crash loop"\n'; \
+		exit 1; \
+	fi
+	@printf '$(BLUE)Searching for: $(QUERY)$(NC)\n'
+	@curl -X GET "http://localhost:8000/api/v1/documents/search?q=$(QUERY)&limit=5" \
+		-H "Accept: application/json" | python -m json.tool
+	@printf '\n'
 
-docker-logs: ## View Docker Compose logs
-	docker-compose logs -f
+clean: ## Clean up cache and temporary files
+	@printf '$(BLUE)Cleaning up...$(NC)\n'
+	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name "node_modules" -path "*/dashboard/node_modules" -exec rm -rf {} + 2>/dev/null || true
+	@rm -rf build/ dist/
+	@printf '$(GREEN)✓ Cleanup complete$(NC)\n'
 
-docker-restart: ## Restart Docker Compose services
-	@echo '$(BLUE)Restarting services...$(NC)'
-	docker-compose restart
-
-docker-clean: ## Stop services and remove volumes
-	@echo '$(YELLOW)Warning: This will delete all data$(NC)'
+clean-data: ## Clean up data and volumes (WARNING: Deletes all knowledge base data!)
+	@printf '$(RED)⚠️  WARNING: This will delete all data!$(NC)\n'
 	@read -p "Continue? [y/N]: " -n 1 -r; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 		docker-compose down -v; \
-		echo '$(GREEN)Services stopped and volumes removed$(NC)'; \
+		rm -rf data/chromadb; \
+		printf '$(GREEN)✓ Data cleaned$(NC)\n'; \
+	else \
+		echo 'Cancelled'; \
 	fi
-
-# Kind (Kubernetes) targets
-kind-setup: ## Create Kind cluster
-	@echo '$(BLUE)Setting up Kind cluster...$(NC)'
-	@./scripts/kind-setup.sh
-
-kind-deploy: ## Deploy to Kind cluster
-	@echo '$(BLUE)Deploying to Kind cluster...$(NC)'
-	@./scripts/kind-deploy.sh
-
-kind-teardown: ## Delete Kind cluster
-	@echo '$(BLUE)Tearing down Kind cluster...$(NC)'
-	@./scripts/kind-teardown.sh
-
-kind-logs: ## View Kubernetes logs
-	kubectl logs -f -n opssage -l app=opssage-backend
-
-kind-status: ## Show Kind cluster status
-	@echo '$(BLUE)Cluster Status:$(NC)'
-	@kind get clusters
-	@echo ''
-	@kubectl get nodes
-	@echo ''
-	@kubectl get all -n opssage
-
-# Database targets
-db-backup: ## Backup ChromaDB data
-	@echo '$(BLUE)Backing up ChromaDB...$(NC)'
-	@mkdir -p backups
-	@docker run --rm \
-		-v opssage_chromadb-data:/data \
-		-v $(PWD)/backups:/backup \
-		alpine tar czf /backup/chromadb-$(shell date +%Y%m%d-%H%M%S).tar.gz -C /data .
-	@echo '$(GREEN)Backup complete$(NC)'
-
-db-restore: ## Restore ChromaDB data (specify BACKUP=filename)
-	@if [ -z "$(BACKUP)" ]; then \
-		echo '$(RED)Error: Please specify BACKUP=filename$(NC)'; \
-		echo 'Example: make db-restore BACKUP=chromadb-20240115-120000.tar.gz'; \
-		exit 1; \
-	fi
-	@echo '$(BLUE)Restoring ChromaDB from $(BACKUP)...$(NC)'
-	@docker run --rm \
-		-v opssage_chromadb-data:/data \
-		-v $(PWD)/backups:/backup \
-		alpine tar xzf /backup/$(BACKUP) -C /data
-	@echo '$(GREEN)Restore complete$(NC)'
-
-# Documentation
-docs-serve: ## Serve documentation locally
-	@echo '$(BLUE)Starting documentation server...$(NC)'
-	@echo 'Available at: http://localhost:8080'
-	@python -m http.server 8080 --directory docs
-
-# Install targets
-install-deps: ## Install all dependencies
-	@echo '$(BLUE)Installing Python dependencies...$(NC)'
-	@uv pip install -r pyproject.toml
-	@echo '$(BLUE)Installing Dashboard dependencies...$(NC)'
-	@cd dashboard && npm install
-	@echo '$(GREEN)Dependencies installed$(NC)'
-
-install-dev: ## Install development tools
-	@echo '$(BLUE)Installing development tools...$(NC)'
-	@pip install uv ruff mypy pytest pytest-cov
-	@echo '$(GREEN)Development tools installed$(NC)'
-
-# Quick actions
-run: docker-up ## Quick start with Docker Compose
-
-stop: docker-down ## Quick stop Docker Compose
-
-restart: docker-restart ## Quick restart Docker Compose
 
 status: ## Show system status
-	@echo '$(BLUE)=== System Status ===$(NC)'
-	@echo ''
-	@echo '$(BLUE)Docker Compose Services:$(NC)'
-	@docker-compose ps 2>/dev/null || echo 'Not running'
-	@echo ''
-	@echo '$(BLUE)Kind Clusters:$(NC)'
-	@kind get clusters 2>/dev/null || echo 'No clusters'
-	@echo ''
-	@if kind get clusters 2>/dev/null | grep -q opssage-cluster; then \
-		echo '$(BLUE)Kubernetes Pods:$(NC)'; \
-		kubectl get pods -n opssage 2>/dev/null || echo 'Namespace not found'; \
-	fi
+	@printf '$(BLUE)=== OpsSage System Status ===$(NC)\n'
+	@printf '\n'
+	@printf '$(BLUE)Services:$(NC)\n'
+	@docker-compose ps 2>/dev/null || echo '  Not running (use: make start)'
+	@printf '\n'
+	@printf '$(BLUE)Health:$(NC)\n'
+	@curl -s http://localhost:8000/api/v1/health 2>/dev/null | python -m json.tool 2>/dev/null || echo '  Backend: Offline'
+	@printf '\n'
 
-# Version info
-version: ## Show version information
-	@echo 'OpsSage v0.1.0'
-	@echo ''
-	@echo 'Tool versions:'
-	@echo -n 'Python: ' && python --version 2>&1
-	@echo -n 'Docker: ' && docker --version 2>&1
-	@echo -n 'Docker Compose: ' && (docker-compose --version 2>&1 || docker compose version 2>&1)
-	@if command -v kind >/dev/null 2>&1; then echo -n 'Kind: ' && kind version 2>&1; fi
-	@if command -v kubectl >/dev/null 2>&1; then echo -n 'kubectl: ' && kubectl version --client --short 2>&1 || kubectl version --client 2>&1; fi
-	@if command -v node >/dev/null 2>&1; then echo -n 'Node: ' && node --version 2>&1; fi
+build: ## Build Docker images
+	@printf '$(BLUE)Building Docker images...$(NC)\n'
+	@docker-compose build
+	@printf '$(GREEN)✓ Build complete$(NC)\n'
+
+lint: ## Run code linters
+	@printf '$(BLUE)Running linters...$(NC)\n'
+	@ruff check sages apis tests
+	@mypy sages
+
+format: ## Format code
+	@printf '$(BLUE)Formatting code...$(NC)\n'
+	@ruff format sages apis tests
+	@printf '$(GREEN)✓ Code formatted$(NC)\n'
+
+dev: ## Start development environment
+	@printf '$(BLUE)Starting development environment...$(NC)\n'
+	@printf 'Backend: http://localhost:8000\n'
+	@printf 'Dashboard: http://localhost:3000\n'
+	@trap 'kill 0' SIGINT; \
+	(cd dashboard && pnpm run dev) & \
+	python run.py

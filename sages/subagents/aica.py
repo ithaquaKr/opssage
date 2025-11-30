@@ -4,9 +4,9 @@ Responsible for ingesting alerts and constructing the Primary Context Package.
 """
 
 from google.adk.agents import Agent
-from google.adk.tools import agent_tool
+from google.adk.tools import FunctionTool
 
-from sages.configs import sage_configs
+from sages.config import get_config
 from sages.tools import (
     event_lookup_tool,
     log_search_tool,
@@ -46,32 +46,35 @@ Output strictly in the following JSON structure:
 {
   "primary_context_package": {
     "alert_metadata": {
-      "alert_name": "",
-      "severity": "",
-      "firing_condition": "",
-      "trigger_time": ""
+      "alert_name": "string",
+      "severity": "string",
+      "firing_condition": "string",
+      "trigger_time": "string"
     },
     "affected_components": {
-      "service": "",
-      "namespace": "",
-      "pod": "",
-      "node": ""
+      "service": "string",
+      "namespace": "string",
+      "pod": "string",
+      "node": "string"
     },
     "evidence_collected": {
-      "metrics": [],
-      "logs": [],
-      "events": []
+      "metrics": [{"key": "value"}],
+      "logs": [{"key": "value"}],
+      "events": [{"key": "value"}]
     },
     "preliminary_analysis": {
-      "observations": [],
-      "hypotheses": [],
-      "missing_information": []
+      "observations": ["string"],
+      "hypotheses": ["string"],
+      "missing_information": ["string"]
     }
   }
 }
 ```
 
-Ensure your response is valid JSON matching this exact structure."""
+**IMPORTANT**:
+- `metrics`, `logs`, and `events` must be arrays of objects (dictionaries), not strings
+- `observations`, `hypotheses`, and `missing_information` must be arrays of simple strings
+- Ensure your response is valid JSON matching this exact structure."""
 
 
 def create_aica_agent() -> Agent:
@@ -81,15 +84,16 @@ def create_aica_agent() -> Agent:
     Returns:
         Configured AICA Agent instance
     """
+    config = get_config()
     aica = Agent(
         name="aica",
-        model=sage_configs.worker_model,
+        model=config.get('models.worker_model'),
         description="Alert Ingestion & Context Agent - Analyzes alerts and builds primary context",
         instruction=AICA_SYSTEM_PROMPT,
         tools=[
-            agent_tool(metrics_query_tool),
-            agent_tool(log_search_tool),
-            agent_tool(event_lookup_tool),
+            FunctionTool(metrics_query_tool),
+            FunctionTool(log_search_tool),
+            FunctionTool(event_lookup_tool),
         ],
         output_key="aica_output",
     )

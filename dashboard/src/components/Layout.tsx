@@ -1,18 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard,
-  AlertTriangle,
-  FileText,
   FolderOpen,
   Search,
   Activity,
 } from 'lucide-react'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Alerts', href: '/alerts', icon: AlertTriangle },
-  { name: 'Incidents', href: '/incidents', icon: FileText },
-  { name: 'Documents', href: '/documents', icon: FolderOpen },
+  { name: 'Documents', href: '/', icon: FolderOpen },
   { name: 'Search', href: '/search', icon: Search },
 ]
 

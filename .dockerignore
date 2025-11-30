@@ -83,8 +83,5 @@ service-account-key.json
 deploy/kubernetes/
 deploy/helm/
 
-# Scripts
-scripts/
-
 # Kind
 kind-config.yaml
