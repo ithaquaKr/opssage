@@ -10,8 +10,8 @@ system:
 
 # AI Models Configuration
 models:
-  worker_model: gemini-1.5-flash
-  critic_model: gemini-1.5-pro
+  worker_model: gemini-1.5-flash-latest
+  critic_model: gemini-1.5-pro-latest
   gemini_api_key: ${GEMINI_API_KEY}  # Set GEMINI_API_KEY environment variable
 
 # Telegram Notifications

@@ -4,7 +4,7 @@ Following ADK best practices for tool design.
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 # ============================================================================
@@ -346,7 +346,7 @@ async def metrics_query_tool(
     import json
 
     adapter = MockMetricsAdapter()
-    end_time = datetime.utcnow()
+    end_time = datetime.now(UTC)
     start_time = end_time - timedelta(minutes=time_range_minutes)
     labels_dict = json.loads(labels)
 
@@ -377,7 +377,7 @@ async def log_search_tool(
     import json
 
     adapter = MockLogAdapter()
-    end_time = datetime.utcnow()
+    end_time = datetime.now(UTC)
     start_time = end_time - timedelta(minutes=time_range_minutes)
 
     results = await adapter.search_logs(query, namespace, pod or None, start_time, end_time, limit)
@@ -405,7 +405,7 @@ async def event_lookup_tool(
     import json
 
     adapter = MockEventAdapter()
-    end_time = datetime.utcnow()
+    end_time = datetime.now(UTC)
     start_time = end_time - timedelta(minutes=time_range_minutes)
 
     results = await adapter.lookup_events(

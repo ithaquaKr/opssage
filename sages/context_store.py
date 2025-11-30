@@ -7,7 +7,7 @@ Following ADK best practices for shared state management.
 import asyncio
 import uuid
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sages.models import (
     AlertInput,
@@ -83,7 +83,7 @@ class ContextStore:
 
             incident = self._store[incident_id]
             incident.primary_context = primary_context
-            incident.updated_at = datetime.utcnow()
+            incident.updated_at = datetime.now(UTC)
             incident.status = "context_collected"
             await self._notify_subscribers(incident_id, incident)
 
@@ -106,7 +106,7 @@ class ContextStore:
 
             incident = self._store[incident_id]
             incident.enhanced_context = enhanced_context
-            incident.updated_at = datetime.utcnow()
+            incident.updated_at = datetime.now(UTC)
             incident.status = "context_enriched"
             await self._notify_subscribers(incident_id, incident)
 
@@ -129,7 +129,7 @@ class ContextStore:
 
             incident = self._store[incident_id]
             incident.diagnostic_report = diagnostic_report
-            incident.updated_at = datetime.utcnow()
+            incident.updated_at = datetime.now(UTC)
             incident.status = "completed"
             await self._notify_subscribers(incident_id, incident)
 
@@ -150,7 +150,7 @@ class ContextStore:
 
             incident = self._store[incident_id]
             incident.status = status
-            incident.updated_at = datetime.utcnow()
+            incident.updated_at = datetime.now(UTC)
             await self._notify_subscribers(incident_id, incident)
 
     async def list_incidents(self, status: str | None = None) -> list[IncidentContext]:

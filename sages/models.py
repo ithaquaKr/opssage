@@ -3,7 +3,7 @@ Data models for message contracts between agents.
 Following ADK best practices for structured communication.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -25,10 +25,10 @@ class AlertMetadata(BaseModel):
 class AffectedComponents(BaseModel):
     """Components affected by the incident."""
 
-    service: str = Field("", description="Affected service name")
-    namespace: str = Field("", description="Kubernetes namespace")
-    pod: str = Field("", description="Affected pod name")
-    node: str = Field("", description="Affected node name")
+    service: str | None = Field(None, description="Affected service name")
+    namespace: str | None = Field(None, description="Kubernetes namespace")
+    pod: str | None = Field(None, description="Affected pod name")
+    node: str | None = Field(None, description="Affected node name")
 
 
 class EvidenceCollected(BaseModel):
@@ -185,7 +185,7 @@ class AlertInput(BaseModel):
     )
     firing_condition: str = Field(..., description="Condition that triggered the alert")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="When the alert fired"
+        default_factory=lambda: datetime.now(UTC), description="When the alert fired"
     )
 
 
@@ -202,8 +202,8 @@ class IncidentContext(BaseModel):
     primary_context: PrimaryContextPackage | None = None
     enhanced_context: EnhancedContextPackage | None = None
     diagnostic_report: IncidentDiagnosticReport | None = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     status: str = Field(
         default="pending", description="Status: pending, analyzing, completed, failed"
     )

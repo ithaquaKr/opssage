@@ -52,10 +52,10 @@ Output strictly in the following JSON structure:
       "trigger_time": "string"
     },
     "affected_components": {
-      "service": "string",
-      "namespace": "string",
-      "pod": "string",
-      "node": "string"
+      "service": "string or null",
+      "namespace": "string or null",
+      "pod": "string or null",
+      "node": "string or null"
     },
     "evidence_collected": {
       "metrics": [{"key": "value"}],

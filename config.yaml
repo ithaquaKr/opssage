@@ -10,15 +10,15 @@ system:
 
 # AI Models Configuration
 models:
-  worker_model: gemini-1.5-flash-latest
-  critic_model: gemini-1.5-pro-latest
-  gemini_api_key: ${GEMINI_API_KEY}  # Set via environment variable
+  worker_model: gemini-2.5-flash
+  critic_model: gemini-2.5-pro
+  gemini_api_key: ${GEMINI_API_KEY} # Set via environment variable
 
 # Telegram Notifications
 telegram:
   enabled: true
-  bot_token: ${TELEGRAM_BOT_TOKEN}  # Set via environment variable
-  chat_id: ${TELEGRAM_CHAT_ID}      # Set via environment variable
+  bot_token: ${TELEGRAM_BOT_TOKEN} # Set via environment variable
+  chat_id: ${TELEGRAM_CHAT_ID} # Set via environment variable
 
 # RAG Knowledge Base System
 rag:

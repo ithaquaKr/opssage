@@ -24,7 +24,7 @@ import asyncio
 import json
 import logging
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -119,7 +119,7 @@ class E2ETestRunner:
         logger.info(f"{'=' * 80}")
 
         alert = self.convert_scenario_to_alert(scenario)
-        start_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
 
         result = {
             "scenario_id": scenario["id"],
@@ -133,7 +133,7 @@ class E2ETestRunner:
         try:
             # Run the incident analysis
             incident_id, diagnostic_report = await self.orchestrator.analyze_incident(alert)
-            end_time = datetime.utcnow()
+            end_time = datetime.now(UTC)
             duration = (end_time - start_time).total_seconds()
 
             # Validate the report
@@ -168,7 +168,7 @@ class E2ETestRunner:
                 logger.warning(f"Validation issues: {', '.join(validation_issues)}")
 
         except Exception as e:
-            end_time = datetime.utcnow()
+            end_time = datetime.now(UTC)
             duration = (end_time - start_time).total_seconds()
 
             logger.error(f"✗ FAIL - Error: {str(e)}")
@@ -283,7 +283,7 @@ class E2ETestRunner:
         with output_path.open("w") as f:
             json.dump(
                 {
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "total_scenarios": len(self.results),
                     "passed": sum(1 for r in self.results if r["success"]),
                     "failed": sum(1 for r in self.results if not r["success"]),
