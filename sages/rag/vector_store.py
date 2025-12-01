@@ -264,9 +264,15 @@ class VectorStore:
         documents = []
         if results["ids"]:
             for i, doc_id in enumerate(results["ids"]):
-                documents.append(
-                    {"id": doc_id, "metadata": results["metadatas"][i] if results["metadatas"] else {}}
-                )
+                metadata = results["metadatas"][i] if results["metadatas"] else {}
+
+                # Extract top-level fields from metadata for better API structure
+                documents.append({
+                    "id": doc_id,
+                    "filename": metadata.get("filename", "unknown"),
+                    "collection": collection_name,
+                    "metadata": metadata
+                })
 
         return documents
 
