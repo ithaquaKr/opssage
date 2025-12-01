@@ -13,6 +13,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - DASHBOARD_URL=${DASHBOARD_URL:-http://localhost:3000}
       - DATABASE_URL=postgresql://opssage:opssage_dev@postgres:5432/opssage
       - PYTHONUNBUFFERED=1
     volumes:

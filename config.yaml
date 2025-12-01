@@ -24,7 +24,7 @@ telegram:
   enabled: true
   bot_token: ${TELEGRAM_BOT_TOKEN}  # Set via environment variable
   chat_id: ${TELEGRAM_CHAT_ID}      # Set via environment variable
-  dashboard_url: http://localhost:3000  # Dashboard URL for incident links
+  dashboard_url: ${DASHBOARD_URL:-http://localhost:3000}  # IMPORTANT: Use public URL, not localhost! Telegram doesn't support localhost links
 
 # RAG Knowledge Base System
 rag:

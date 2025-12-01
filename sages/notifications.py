@@ -4,7 +4,6 @@ Supports multiple notification channels including Telegram.
 """
 
 import logging
-from typing import Any
 
 import httpx
 
@@ -28,15 +27,19 @@ class TelegramNotifier:
         config = get_config()
         self.bot_token = bot_token or config.get("telegram.bot_token")
         self.chat_id = chat_id or config.get("telegram.chat_id")
-        self.dashboard_url = config.get("telegram.dashboard_url", "http://localhost:3000")
-        self.enabled = config.get("telegram.enabled", True) and bool(self.bot_token and self.chat_id)
+        self.dashboard_url = config.get(
+            "telegram.dashboard_url", "http://localhost:3000"
+        )
+        self.enabled = config.get("telegram.enabled", True) and bool(
+            self.bot_token and self.chat_id
+        )
 
         if not self.enabled:
             logger.warning(
                 "Telegram notifications disabled: Check config.yaml telegram settings"
             )
 
-    async def send_message(self, message: str, parse_mode: str = "Markdown") -> bool:
+    async def send_message(self, message: str, parse_mode: str = "HTML") -> bool:
         """
         Send a message to Telegram.
 
@@ -62,7 +65,9 @@ class TelegramNotifier:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(url, json=payload)
                 response.raise_for_status()
-                logger.info(f"Telegram notification sent successfully to chat {self.chat_id}")
+                logger.info(
+                    f"Telegram notification sent successfully to chat {self.chat_id}"
+                )
                 return True
         except Exception as e:
             logger.error(f"Failed to send Telegram notification: {e}")
@@ -87,18 +92,18 @@ class TelegramNotifier:
             msg = msg[:147] + "..."
 
         message = f"""
-🚨 *Incident Analysis Started*
+🚨 <b>Incident Analysis Started</b>
 
-*Alert:* {alert.alert_name}
-*Severity:* {alert.severity.upper()}
-*Namespace:* {alert.labels.get('namespace', 'N/A')}
-*Service:* {alert.labels.get('service', 'N/A')}
+<b>Alert:</b> {alert.alert_name}
+<b>Severity:</b> {alert.severity.upper()}
+<b>Namespace:</b> {alert.labels.get('namespace', 'N/A')}
+<b>Service:</b> {alert.labels.get('service', 'N/A')}
 
-*Message:* {msg}
+<b>Message:</b> {msg}
 
 ⏳ Analysis in progress...
 
-[View Full Details]({incident_url})
+<a href="{incident_url}">View Full Details</a>
 """
         return await self.send_message(message.strip())
 
@@ -134,23 +139,27 @@ class TelegramNotifier:
         # Format top 2 immediate actions only
         actions = diagnostic_report.recommended_remediation.short_term_actions[:2]
         short_term = "\n".join(f"  • {action}" for action in actions)
-        remaining = len(diagnostic_report.recommended_remediation.short_term_actions) - 2
+        remaining = (
+            len(diagnostic_report.recommended_remediation.short_term_actions) - 2
+        )
         if remaining > 0:
-            short_term += f"\n  • +{remaining} more action{'s' if remaining > 1 else ''}"
+            short_term += (
+                f"\n  • +{remaining} more action{'s' if remaining > 1 else ''}"
+            )
 
         message = f"""
-✅ *Incident Analysis Complete*
+✅ <b>Incident Analysis Complete</b>
 
-*Alert:* {alert.alert_name}
-*Duration:* {duration_seconds:.1f}s
+<b>Alert:</b> {alert.alert_name}
+<b>Duration:</b> {duration_seconds:.1f}s
 
-🎯 *Root Cause* ({confidence_pct}%):
+🎯 <b>Root Cause</b> ({confidence_pct}%):
 {root_cause}
 
-🔧 *Top Actions:*
+🔧 <b>Top Actions:</b>
 {short_term}
 
-[📊 View Full Report]({incident_url})
+<a href="{incident_url}">📊 View Full Report</a>
 """
         return await self.send_message(message.strip())
 
@@ -181,17 +190,15 @@ class TelegramNotifier:
             error_msg = error_msg[:197] + "..."
 
         message = f"""
-❌ *Incident Analysis Failed*
+❌ <b>Incident Analysis Failed</b>
 
-*Alert:* {alert.alert_name}
-*Duration:* {duration_seconds:.1f}s
+<b>Alert:</b> {alert.alert_name}
+<b>Duration:</b> {duration_seconds:.1f}s
 
-⚠️ *Error:*
-```
-{error_msg}
-```
+⚠️ <b>Error:</b>
+<pre>{error_msg}</pre>
 
-[View Incident Details]({incident_url})
+<a href="{incident_url}">View Incident Details</a>
 """
         return await self.send_message(message.strip())
 
@@ -218,13 +225,13 @@ class TelegramNotifier:
         status_emoji = "✅" if failed == 0 else "⚠️"
 
         message = f"""
-{status_emoji} *E2E Test Results*
+{status_emoji} <b>E2E Test Results</b>
 
-*Total Scenarios:* {total_scenarios}
-✅ *Passed:* {passed}
-❌ *Failed:* {failed}
-📊 *Success Rate:* {success_rate:.1f}%
-⏱️ *Duration:* {duration_seconds:.1f}s
+<b>Total Scenarios:</b> {total_scenarios}
+✅ <b>Passed:</b> {passed}
+❌ <b>Failed:</b> {failed}
+📊 <b>Success Rate:</b> {success_rate:.1f}%
+⏱️ <b>Duration:</b> {duration_seconds:.1f}s
 
 {self._get_status_bar(passed, failed)}
 """

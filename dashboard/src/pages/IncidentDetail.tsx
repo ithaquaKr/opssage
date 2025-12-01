@@ -109,16 +109,16 @@ export default function IncidentDetail() {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case "completed":
-                return <CheckCircle className="h-6 w-6 text-green-500" />;
+                return <CheckCircle className="h-6 w-6 text-[#16A34A]" />;
             case "failed":
-                return <XCircle className="h-6 w-6 text-red-500" />;
+                return <XCircle className="h-6 w-6 text-[#DC2626]" />;
             case "pending":
             case "running_aica":
             case "running_krea":
             case "running_rcara":
-                return <Clock className="h-6 w-6 text-yellow-500 animate-spin" />;
+                return <Clock className="h-6 w-6 text-[#EA580C] animate-spin" />;
             default:
-                return <AlertCircle className="h-6 w-6 text-gray-500" />;
+                return <AlertCircle className="h-6 w-6 text-[#A3A3A3]" />;
         }
     };
 
@@ -157,7 +157,7 @@ export default function IncidentDetail() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CC785C]"></div>
             </div>
         );
     }
@@ -172,7 +172,7 @@ export default function IncidentDetail() {
                     <div className="mt-6">
                         <Link
                             to="/incidents"
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                            className="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-[#CC785C] hover:bg-[#B86B50] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Incidents
@@ -189,7 +189,7 @@ export default function IncidentDetail() {
             <div className="mb-6">
                 <Link
                     to="/incidents"
-                    className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 mb-4"
+                    className="inline-flex items-center text-sm font-medium text-[#666666] hover:text-[#1F1F1F] mb-4 transition-all duration-200"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Incidents
@@ -198,7 +198,7 @@ export default function IncidentDetail() {
                     <div className="flex items-start gap-4">
                         {getStatusIcon(incident.status)}
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{incident.alert_input.alert_name}</h1>
+                            <h1 className="text-3xl font-bold text-[#171717]">{incident.alert_input.alert_name}</h1>
                             <div className="mt-2 flex items-center gap-3">
                                 {getSeverityBadge(incident.alert_input.severity)}
                                 {getStatusBadge(incident.status)}
@@ -209,9 +209,9 @@ export default function IncidentDetail() {
             </div>
 
             {/* Alert Information */}
-            <div className="bg-white shadow rounded-lg p-6 mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <div className="bg-white border border-[#E5E5E5] shadow-sm rounded-xl p-6 mb-6 transition-all duration-200">
+                <h2 className="text-lg font-semibold text-[#171717] mb-4 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-[#EA580C]" />
                     Alert Information
                 </h2>
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -240,9 +240,9 @@ export default function IncidentDetail() {
 
             {/* Affected Components */}
             {incident.primary_context?.affected_components && (
-                <div className="bg-white shadow rounded-lg p-6 mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <Server className="h-5 w-5 text-blue-500" />
+                <div className="bg-white border border-[#E5E5E5] shadow-sm rounded-xl p-6 mb-6 transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-[#171717] mb-4 flex items-center gap-2">
+                        <Server className="h-5 w-5 text-[#2563EB]" />
                         Affected Components
                     </h2>
                     <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -286,62 +286,62 @@ export default function IncidentDetail() {
             {incident.diagnostic_report && (
                 <>
                     {/* Root Cause */}
-                    <div className="bg-white shadow rounded-lg p-6 mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Target className="h-5 w-5 text-red-500" />
+                    <div className="bg-white border border-[#E5E5E5] shadow-sm rounded-xl p-6 mb-6 transition-all duration-200">
+                        <h2 className="text-lg font-semibold text-[#171717] mb-4 flex items-center gap-2">
+                            <Target className="h-5 w-5 text-[#DC2626]" />
                             Root Cause Analysis
                         </h2>
                         <div className="mb-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-500">Confidence Score</span>
-                                <span className="text-lg font-bold text-primary-600">
+                                <span className="text-sm font-medium text-[#737373]">Confidence Score</span>
+                                <span className="text-lg font-bold text-[#CC785C]">
                                     {Math.round(incident.diagnostic_report.confidence_score * 100)}%
                                 </span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="w-full bg-[#E5E5E5] rounded-full h-2">
                                 <div
-                                    className="bg-primary-600 h-2 rounded-full transition-all"
+                                    className="bg-[#CC785C] h-2 rounded-full transition-all duration-200"
                                     style={{ width: `${incident.diagnostic_report.confidence_score * 100}%` }}
                                 ></div>
                             </div>
                         </div>
                         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <p className="text-gray-900">{incident.diagnostic_report.root_cause}</p>
+                            <p className="text-[#1F1F1F]">{incident.diagnostic_report.root_cause}</p>
                         </div>
                     </div>
 
                     {/* Remediation Actions */}
-                    <div className="bg-white shadow rounded-lg p-6 mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Lightbulb className="h-5 w-5 text-yellow-500" />
+                    <div className="bg-white border border-[#E5E5E5] shadow-sm rounded-xl p-6 mb-6 transition-all duration-200">
+                        <h2 className="text-lg font-semibold text-[#171717] mb-4 flex items-center gap-2">
+                            <Lightbulb className="h-5 w-5 text-[#EA580C]" />
                             Recommended Remediation
                         </h2>
                         <div className="space-y-4">
                             <div>
-                                <h3 className="text-sm font-semibold text-gray-900 mb-2">Immediate Actions</h3>
+                                <h3 className="text-sm font-semibold text-[#171717] mb-2">Immediate Actions</h3>
                                 <ul className="space-y-2">
                                     {incident.diagnostic_report.recommended_remediation.short_term_actions.map(
                                         (action, idx) => (
                                             <li key={idx} className="flex items-start gap-2">
-                                                <span className="flex-shrink-0 h-5 w-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-medium">
+                                                <span className="flex-shrink-0 h-5 w-5 rounded-full bg-[#FDF6F3] text-[#CC785C] flex items-center justify-center text-xs font-medium">
                                                     {idx + 1}
                                                 </span>
-                                                <span className="text-sm text-gray-700">{action}</span>
+                                                <span className="text-sm text-[#525252]">{action}</span>
                                             </li>
                                         ),
                                     )}
                                 </ul>
                             </div>
                             <div>
-                                <h3 className="text-sm font-semibold text-gray-900 mb-2">Long-term Improvements</h3>
+                                <h3 className="text-sm font-semibold text-[#171717] mb-2">Long-term Improvements</h3>
                                 <ul className="space-y-2">
                                     {incident.diagnostic_report.recommended_remediation.long_term_actions.map(
                                         (action, idx) => (
                                             <li key={idx} className="flex items-start gap-2">
-                                                <span className="flex-shrink-0 h-5 w-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium">
+                                                <span className="flex-shrink-0 h-5 w-5 rounded-full bg-[#F3F3F3] text-[#525252] flex items-center justify-center text-xs font-medium">
                                                     {idx + 1}
                                                 </span>
-                                                <span className="text-sm text-gray-700">{action}</span>
+                                                <span className="text-sm text-[#525252]">{action}</span>
                                             </li>
                                         ),
                                     )}
@@ -351,9 +351,9 @@ export default function IncidentDetail() {
                     </div>
 
                     {/* Reasoning Steps */}
-                    <div className="bg-white shadow rounded-lg p-6 mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <FileText className="h-5 w-5 text-purple-500" />
+                    <div className="bg-white border border-[#E5E5E5] shadow-sm rounded-xl p-6 mb-6 transition-all duration-200">
+                        <h2 className="text-lg font-semibold text-[#171717] mb-4 flex items-center gap-2">
+                            <FileText className="h-5 w-5 text-[#9333EA]" />
                             Analysis Steps
                         </h2>
                         <ol className="space-y-3">
@@ -362,20 +362,20 @@ export default function IncidentDetail() {
                                     <span className="flex-shrink-0 h-6 w-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm font-medium">
                                         {idx + 1}
                                     </span>
-                                    <p className="text-sm text-gray-700 pt-0.5">{step}</p>
+                                    <p className="text-sm text-[#525252] pt-0.5">{step}</p>
                                 </li>
                             ))}
                         </ol>
                     </div>
 
                     {/* Supporting Evidence */}
-                    <div className="bg-white shadow rounded-lg p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Supporting Evidence</h2>
+                    <div className="bg-white border border-[#E5E5E5] shadow-sm rounded-xl p-6 transition-all duration-200">
+                        <h2 className="text-lg font-semibold text-[#171717] mb-4">Supporting Evidence</h2>
                         <ul className="space-y-2">
                             {incident.diagnostic_report.supporting_evidence.map((evidence, idx) => (
                                 <li key={idx} className="flex items-start gap-2">
-                                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm text-gray-700">{evidence}</span>
+                                    <CheckCircle className="h-4 w-4 text-[#16A34A] mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm text-[#525252]">{evidence}</span>
                                 </li>
                             ))}
                         </ul>
@@ -386,9 +386,9 @@ export default function IncidentDetail() {
             {/* Loading state for in-progress incidents */}
             {!incident.diagnostic_report &&
                 ["running_aica", "running_krea", "running_rcara"].includes(incident.status) && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 transition-all duration-200">
                         <div className="flex items-center gap-3">
-                            <Clock className="h-6 w-6 text-blue-600 animate-spin" />
+                            <Clock className="h-6 w-6 text-[#2563EB] animate-spin" />
                             <div>
                                 <h3 className="text-lg font-semibold text-blue-900">Analysis in Progress</h3>
                                 <p className="text-sm text-blue-700 mt-1">
