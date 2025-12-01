@@ -96,41 +96,43 @@ export default function Documents() {
             headerName: "Filename",
             field: "filename",
             flex: 1,
-            cellClass: "font-medium text-gray-900",
+            cellClass: "font-medium text-gray-900 dark:text-gray-100",
         },
         {
             headerName: "Category",
             field: "metadata.category",
             width: 150,
             valueFormatter: (params: any) => params.value || "-",
-            cellClass: (params: any) => (params.value ? "" : "text-gray-400"),
+            cellClass: (params: any) => (params.value ? "dark:text-gray-200" : "text-gray-400 dark:text-gray-600"),
         },
         {
             headerName: "Type",
             field: "metadata.doc_type",
             width: 120,
             valueFormatter: (params: any) => params.value || "general",
+            cellClass: "dark:text-gray-200",
         },
         {
             headerName: "Size",
             field: "metadata.char_count",
             width: 120,
             valueFormatter: (params: any) => (params.value ? `${(params.value / 1000).toFixed(1)}K chars` : "-"),
+            cellClass: "dark:text-gray-200",
         },
         {
             headerName: "Actions",
             width: 100,
             cellRenderer: () => "🗑️",
-            cellClass: "text-red-600 hover:text-red-700 cursor-pointer flex items-center justify-center",
+            cellClass: "text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 cursor-pointer flex items-center justify-center",
             onCellClicked: (params: any) => handleDelete(params.data.id),
         },
     ];
 
     return (
-        <div className="p-8">
+        <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Documents</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50">Documents</h1>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">
                     Manage knowledge base documents, playbooks, and incident reports
                 </p>
             </div>
@@ -142,27 +144,27 @@ export default function Documents() {
                         <CardHeader title="Upload Document" />
                         <form onSubmit={handleUpload} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">File *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">File *</label>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
                                     required
                                     onChange={handleFileSelect}
                                     accept=".txt,.md,.pdf,.docx,.json"
-                                    className="mt-1 block w-full text-sm text-gray-900 file:mr-4 file:rounded-lg file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-700 hover:file:bg-primary-100"
+                                    className="mt-1 block w-full text-sm text-gray-900 dark:text-gray-100 file:mr-4 file:rounded-lg file:border-0 file:bg-primary-light file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary-hover hover:file:text-white"
                                 />
-                                <p className="mt-1 text-xs text-gray-500">
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     Supported formats: TXT, MD, PDF, DOCX, JSON
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Document Type</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Document Type</label>
                                     <select
                                         value={uploadForm.docType}
                                         onChange={(e) => setUploadForm({ ...uploadForm, docType: e.target.value })}
-                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                        className="mt-1 block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                                     >
                                         <option value="general">General Documentation</option>
                                         <option value="playbook">Playbook/Runbook</option>
@@ -171,25 +173,25 @@ export default function Documents() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Category</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                                     <input
                                         type="text"
                                         value={uploadForm.category}
                                         onChange={(e) => setUploadForm({ ...uploadForm, category: e.target.value })}
                                         placeholder="e.g., kubernetes, database"
-                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                        className="mt-1 block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Description</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                                 <textarea
                                     value={uploadForm.description}
                                     onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
                                     rows={2}
                                     placeholder="Optional description"
-                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                    className="mt-1 block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                 />
                             </div>
 
@@ -216,7 +218,7 @@ export default function Documents() {
                                     <select
                                         value={collection}
                                         onChange={(e) => setCollection(e.target.value as typeof collection)}
-                                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                        className="rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                                     >
                                         <option value="documents">Documents</option>
                                         <option value="playbooks">Playbooks</option>

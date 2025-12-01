@@ -71,19 +71,19 @@ export default function Incidents() {
         const baseClass = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
         switch (status) {
             case "completed":
-                return <span className={`${baseClass} bg-green-100 text-green-800`}>Completed</span>;
+                return <span className={`${baseClass} bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300`}>Completed</span>;
             case "failed":
-                return <span className={`${baseClass} bg-red-100 text-red-800`}>Failed</span>;
+                return <span className={`${baseClass} bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300`}>Failed</span>;
             case "running_aica":
-                return <span className={`${baseClass} bg-blue-100 text-blue-800`}>AICA Running</span>;
+                return <span className={`${baseClass} bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300`}>AICA Running</span>;
             case "running_krea":
-                return <span className={`${baseClass} bg-purple-100 text-purple-800`}>KREA Running</span>;
+                return <span className={`${baseClass} bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300`}>KREA Running</span>;
             case "running_rcara":
-                return <span className={`${baseClass} bg-indigo-100 text-indigo-800`}>RCARA Running</span>;
+                return <span className={`${baseClass} bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300`}>RCARA Running</span>;
             case "pending":
-                return <span className={`${baseClass} bg-yellow-100 text-yellow-800`}>Pending</span>;
+                return <span className={`${baseClass} bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300`}>Pending</span>;
             default:
-                return <span className={`${baseClass} bg-gray-100 text-gray-800`}>{status}</span>;
+                return <span className={`${baseClass} bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200`}>{status}</span>;
         }
     };
 
@@ -91,13 +91,13 @@ export default function Incidents() {
         const baseClass = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
         switch (severity.toLowerCase()) {
             case "critical":
-                return <span className={`${baseClass} bg-red-100 text-red-800`}>Critical</span>;
+                return <span className={`${baseClass} bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300`}>Critical</span>;
             case "warning":
-                return <span className={`${baseClass} bg-yellow-100 text-yellow-800`}>Warning</span>;
+                return <span className={`${baseClass} bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300`}>Warning</span>;
             case "info":
-                return <span className={`${baseClass} bg-blue-100 text-blue-800`}>Info</span>;
+                return <span className={`${baseClass} bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300`}>Info</span>;
             default:
-                return <span className={`${baseClass} bg-gray-100 text-gray-800`}>{severity}</span>;
+                return <span className={`${baseClass} bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200`}>{severity}</span>;
         }
     };
 
@@ -108,10 +108,10 @@ export default function Incidents() {
     const filteredIncidents = incidents;
 
     return (
-        <div className="p-8">
+        <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Incidents</h1>
-                <p className="mt-2 text-sm text-gray-600">View and manage all incident analysis reports</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50">Incidents</h1>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">View and manage all incident analysis reports</p>
             </div>
 
             {/* Filters */}
@@ -120,8 +120,8 @@ export default function Incidents() {
                     onClick={() => setFilter("all")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         filter === "all"
-                            ? "bg-primary-600 text-white"
-                            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                            ? "bg-primary text-white"
+                            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                 >
                     All
@@ -130,8 +130,8 @@ export default function Incidents() {
                     onClick={() => setFilter("completed")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         filter === "completed"
-                            ? "bg-primary-600 text-white"
-                            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                            ? "bg-primary text-white"
+                            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                 >
                     Completed
@@ -140,8 +140,8 @@ export default function Incidents() {
                     onClick={() => setFilter("failed")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         filter === "failed"
-                            ? "bg-primary-600 text-white"
-                            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                            ? "bg-primary text-white"
+                            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                 >
                     Failed
@@ -151,24 +151,24 @@ export default function Incidents() {
             {/* Incidents List */}
             {loading ? (
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 </div>
             ) : filteredIncidents.length === 0 ? (
-                <div className="bg-white rounded-lg shadow p-12 text-center">
-                    <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-lg font-medium text-gray-900">No incidents found</h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow p-12 text-center">
+                    <AlertCircle className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
+                    <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No incidents found</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         {filter === "all" ? "No incidents have been created yet." : `No ${filter} incidents found.`}
                     </p>
                 </div>
             ) : (
-                <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                    <ul className="divide-y divide-gray-200">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-md rounded-lg overflow-hidden">
+                    <ul className="divide-y divide-gray-200 dark:divide-gray-600">
                         {filteredIncidents.map((incident) => (
                             <li key={incident.incident_id}>
                                 <Link
                                     to={`/incidents/${incident.incident_id}`}
-                                    className="block hover:bg-gray-50 transition-colors"
+                                    className="block hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                 >
                                     <div className="px-6 py-4">
                                         <div className="flex items-center justify-between">
@@ -176,16 +176,16 @@ export default function Incidents() {
                                                 {getStatusIcon(incident.status)}
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-3 mb-1">
-                                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                                             {incident.alert_input.alert_name}
                                                         </p>
                                                         {getSeverityBadge(incident.alert_input.severity)}
                                                         {getStatusBadge(incident.status)}
                                                     </div>
-                                                    <p className="text-sm text-gray-600 truncate">
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                                                         {incident.alert_input.message}
                                                     </p>
-                                                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                                                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                                                         <span>ID: {incident.incident_id.slice(0, 8)}...</span>
                                                         {incident.alert_input.labels.namespace && (
                                                             <span>
@@ -201,11 +201,11 @@ export default function Incidents() {
                                                     </div>
                                                     {incident.diagnostic_report && (
                                                         <div className="mt-2">
-                                                            <p className="text-xs text-gray-700 line-clamp-1">
+                                                            <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-1">
                                                                 <span className="font-medium">Root Cause:</span>{" "}
                                                                 {incident.diagnostic_report.root_cause}
                                                             </p>
-                                                            <p className="text-xs text-gray-500 mt-1">
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                                 Confidence:{" "}
                                                                 {Math.round(
                                                                     incident.diagnostic_report.confidence_score *
@@ -217,7 +217,7 @@ export default function Incidents() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <ChevronRight className="h-5 w-5 text-gray-400" />
+                                            <ChevronRight className="h-5 w-5 text-gray-400 dark:text-gray-600" />
                                         </div>
                                     </div>
                                 </Link>
