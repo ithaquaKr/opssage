@@ -12,19 +12,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from apis.documents import router as documents_router
 from sages.config import get_config
 from sages.context_store import get_context_store
+from sages.db.database import init_db
 from sages.models import AlertInput, IncidentContext
 from sages.orchestrator import create_orchestrator
 
 logger = logging.getLogger(__name__)
 
 
-# Initialize orchestrator on startup
+# Initialize orchestrator and database on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan."""
     logger.info("Starting OpsSage API server")
+
+    # Initialize database tables
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        raise
+
+    # Initialize application state
     app.state.orchestrator = create_orchestrator()
     app.state.context_store = get_context_store()
+
     yield
     logger.info("Shutting down OpsSage API server")
 

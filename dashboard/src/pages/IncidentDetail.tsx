@@ -9,7 +9,6 @@ import {
   Target,
   Lightbulb,
   FileText,
-  Calendar,
   Server,
   AlertTriangle,
 } from 'lucide-react'

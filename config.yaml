@@ -8,6 +8,11 @@ system:
   host: 0.0.0.0
   port: 8000
 
+# Database Configuration
+database:
+  url: ${DATABASE_URL}  # Set DATABASE_URL env var, defaults to SQLite if not set
+  echo: false  # Set to true for SQL query logging
+
 # AI Models Configuration
 models:
   worker_model: gemini-2.5-flash

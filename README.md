@@ -24,17 +24,20 @@ make start
 
 ### 3. Access the System
 
-- **Dashboard**: <http://localhost:3000> (Upload & search documents)
+- **Dashboard**: <http://localhost:3000> (View incidents, upload & search documents)
 - **API Docs**: <http://localhost:8000/docs>
 - **ChromaDB**: <http://localhost:8001>
+- **PostgreSQL**: `localhost:5432` (incident database)
 
 ---
 
 ## 📦 What's Included
 
 - **Multi-Agent System**: AICA (Alert Ingestion) → KREA (Knowledge Retrieval) → RCARA (Root Cause Analysis)
+- **Database Persistence**: PostgreSQL storage for all incident data (survives container restarts)
 - **RAG Knowledge Base**: Upload and search runbooks, documentation, and playbooks
 - **Document Management**: Web UI for uploading PDFs, Markdown, DOCX, and TXT files
+- **Incident Dashboard**: View incident history, analysis results, and detailed reports
 - **Telegram Notifications**: Real-time incident alerts and analysis results
 - **E2E Testing**: Complete test scenarios with Telegram integration
 
@@ -108,6 +111,10 @@ All configuration is in `config.yaml`:
 system:
     log_level: INFO
 
+database:
+    url: ${DATABASE_URL}  # PostgreSQL connection string
+    echo: false
+
 models:
     worker_model: gemini-1.5-flash
     critic_model: gemini-1.5-pro
@@ -117,6 +124,7 @@ telegram:
     enabled: true
     bot_token: ${TELEGRAM_BOT_TOKEN}
     chat_id: ${TELEGRAM_CHAT_ID}
+    dashboard_url: http://localhost:3000  # For incident links
 
 rag:
     chromadb_path: ./data/chromadb
@@ -125,9 +133,50 @@ rag:
 
 Secrets are read from environment variables for security.
 
+**Database Configuration:**
+- **Production (Docker)**: Uses PostgreSQL automatically (configured in `docker-compose.yml`)
+- **Local Development**: Uses SQLite by default (`./data/opssage.db`)
+
+See [DATABASE_PERSISTENCE.md](DATABASE_PERSISTENCE.md) for detailed database documentation.
+
 ---
 
 ## 🎯 Common Tasks
+
+### View Incident History
+
+**Via Dashboard:**
+
+```bash
+# Visit http://localhost:3000/incidents
+# View all incidents with filtering by status
+# Click on any incident to see full analysis
+```
+
+**Via API:**
+
+```bash
+# List all incidents
+curl http://localhost:8000/api/v1/incidents
+
+# Filter by status
+curl http://localhost:8000/api/v1/incidents?status=completed
+
+# Get specific incident
+curl http://localhost:8000/api/v1/incidents/{incident_id}
+```
+
+**Via Database:**
+
+```bash
+# Connect to PostgreSQL
+docker exec -it opssage-postgres psql -U opssage -d opssage
+
+# View recent incidents
+SELECT incident_id, alert_name, status, created_at
+FROM incidents
+ORDER BY created_at DESC LIMIT 10;
+```
 
 ### Upload Documents to Knowledge Base
 
@@ -340,7 +389,11 @@ opssage/
 │   ├── orchestrator.py      # Multi-agent coordinator
 │   ├── subagents/           # AICA, KREA, RCARA
 │   ├── rag/                 # Knowledge base system
+│   ├── db/                  # Database models & persistence
+│   │   ├── models.py        # SQLAlchemy ORM models
+│   │   └── database.py      # Session management
 │   ├── notifications.py     # Telegram integration
+│   ├── context_store.py     # Incident storage (with DB)
 │   └── config.py            # Configuration loader
 │
 ├── apis/                    # FastAPI server
@@ -350,6 +403,8 @@ opssage/
 ├── dashboard/               # React web UI
 │   └── src/
 │       ├── pages/
+│       │   ├── Incidents.tsx    # Incident list view
+│       │   ├── IncidentDetail.tsx  # Incident detail view
 │       │   ├── Documents.tsx    # Document management
 │       │   └── Search.tsx       # Document search
 │       └── components/
@@ -372,6 +427,14 @@ This is a simplified, production-ready version focused on two use cases:
 2. E2E testing with realistic scenarios
 
 Keep it simple!
+
+---
+
+## 📖 Documentation
+
+- [DATABASE_PERSISTENCE.md](DATABASE_PERSISTENCE.md) - Database setup, schema, and operations
+- [SETUP.md](SETUP.md) - Detailed setup and installation instructions
+- [tests/README.md](tests/README.md) - Testing documentation
 
 ---
 
