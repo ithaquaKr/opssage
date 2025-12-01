@@ -1,4 +1,6 @@
 import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 import { RefreshCw, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -123,7 +125,8 @@ export default function Documents() {
             headerName: "Actions",
             width: 100,
             cellRenderer: () => "🗑️",
-            cellClass: "text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 cursor-pointer flex items-center justify-center",
+            cellClass:
+                "text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 cursor-pointer flex items-center justify-center",
             onCellClicked: (params: any) => handleDelete(params.data.id),
         },
     ];
@@ -144,7 +147,9 @@ export default function Documents() {
                         <CardHeader title="Upload Document" />
                         <form onSubmit={handleUpload} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">File *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    File *
+                                </label>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -160,7 +165,9 @@ export default function Documents() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Document Type</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Document Type
+                                    </label>
                                     <select
                                         value={uploadForm.docType}
                                         onChange={(e) => setUploadForm({ ...uploadForm, docType: e.target.value })}
@@ -173,7 +180,9 @@ export default function Documents() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Category
+                                    </label>
                                     <input
                                         type="text"
                                         value={uploadForm.category}
@@ -185,7 +194,9 @@ export default function Documents() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Description
+                                </label>
                                 <textarea
                                     value={uploadForm.description}
                                     onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
