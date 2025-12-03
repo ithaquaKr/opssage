@@ -1,0 +1,18 @@
+{
+  "alert_name": "KubeNodeNotReady",
+  "severity": "critical",
+  "message": "Node worker-node-03 is intermittently not ready. Status has been NotReady 3 times in the last 15 minutes.",
+  "labels": {
+    "alertname": "KubeNodeNotReady",
+    "node": "worker-node-03",
+    "severity": "critical",
+    "cluster": "prod-us-east-1"
+  },
+  "annotations": {
+    "summary": "Node worker-node-03 is intermittently not ready",
+    "description": "Node worker-node-03 status has been NotReady 3 times in the last 15 minutes",
+    "runbook_url": "https://runbooks.example.com/KubeNodeNotReady"
+  },
+  "firing_condition": "kube_node_status_condition",
+  "timestamp": "2025-11-29T11:25:00Z"
+}

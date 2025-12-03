@@ -1,0 +1,19 @@
+{
+  "alert_name": "PodCpuThrottlingHigh",
+  "severity": "warning",
+  "message": "Pod analytics-worker-5c8d9e7f6-hg3km is experiencing high CPU throttling. Pod has been throttled for 65% of the time over the last 5 minutes.",
+  "labels": {
+    "alertname": "PodCpuThrottlingHigh",
+    "namespace": "production",
+    "pod": "analytics-worker-5c8d9e7f6-hg3km",
+    "node": "worker-node-03",
+    "severity": "warning"
+  },
+  "annotations": {
+    "summary": "Pod analytics-worker-5c8d9e7f6-hg3km is experiencing high CPU throttling",
+    "description": "Pod has been throttled for 65% of the time over the last 5 minutes",
+    "runbook_url": "https://runbooks.example.com/PodCpuThrottlingHigh"
+  },
+  "firing_condition": "rate(container_cpu_cfs_throttled_seconds_total[5m]) > 0.5",
+  "timestamp": "2025-11-29T11:22:00Z"
+}

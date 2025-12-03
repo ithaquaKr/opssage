@@ -1,0 +1,18 @@
+{
+  "alert_name": "NodeHighCpuUsage",
+  "severity": "warning",
+  "message": "Node worker-node-03 CPU usage is critically high. CPU usage has been above 95% for 10 minutes.",
+  "labels": {
+    "alertname": "NodeHighCpuUsage",
+    "node": "worker-node-03",
+    "severity": "warning",
+    "cluster": "prod-us-east-1"
+  },
+  "annotations": {
+    "summary": "Node worker-node-03 CPU usage is critically high",
+    "description": "CPU usage on worker-node-03 has been above 95% for 10 minutes",
+    "runbook_url": "https://runbooks.example.com/NodeHighCpuUsage"
+  },
+  "firing_condition": "node_cpu_usage > 0.95",
+  "timestamp": "2025-11-29T11:20:00Z"
+}

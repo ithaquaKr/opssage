@@ -1,0 +1,19 @@
+{
+  "alert_name": "DependencyRequestFailure",
+  "severity": "critical",
+  "message": "Payment Service cannot reach auth-service dependency. 95% of requests from payment-service to auth-service are failing.",
+  "labels": {
+    "alertname": "DependencyRequestFailure",
+    "namespace": "production",
+    "service": "payment-service",
+    "dependency": "auth-service",
+    "severity": "critical"
+  },
+  "annotations": {
+    "summary": "Payment Service cannot reach auth-service dependency",
+    "description": "95% of requests from payment-service to auth-service are failing",
+    "runbook_url": "https://runbooks.example.com/DependencyRequestFailure"
+  },
+  "firing_condition": "dependency_request_success_rate",
+  "timestamp": "2025-11-29T14:10:30Z"
+}

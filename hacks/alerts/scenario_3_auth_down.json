@@ -1,0 +1,18 @@
+{
+  "alert_name": "ServiceDown",
+  "severity": "critical",
+  "message": "Auth Service is down. Service has failed health checks for 5 consecutive minutes.",
+  "labels": {
+    "alertname": "ServiceDown",
+    "namespace": "production",
+    "service": "auth-service",
+    "severity": "critical"
+  },
+  "annotations": {
+    "summary": "Auth Service is down",
+    "description": "Auth Service has failed health checks for 5 consecutive minutes",
+    "runbook_url": "https://runbooks.example.com/ServiceDown"
+  },
+  "firing_condition": "up{service=\"auth-service\"} == 0",
+  "timestamp": "2025-11-29T14:10:00Z"
+}

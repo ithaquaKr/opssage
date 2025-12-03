@@ -1,0 +1,18 @@
+{
+  "alert_name": "HTTP500RateIncrease",
+  "severity": "warning",
+  "message": "Order Service experiencing high 500 error rate. HTTP 500 errors increased by 450% in order-service.",
+  "labels": {
+    "alertname": "HTTP500RateIncrease",
+    "namespace": "production",
+    "service": "order-service",
+    "severity": "warning"
+  },
+  "annotations": {
+    "summary": "Order Service experiencing high 500 error rate",
+    "description": "HTTP 500 errors increased by 450% in order-service",
+    "runbook_url": "https://runbooks.example.com/HTTP500RateIncrease"
+  },
+  "firing_condition": "rate(http_requests_total{status=\"500\"}[5m])",
+  "timestamp": "2025-11-29T14:11:00Z"
+}

@@ -1,0 +1,20 @@
+{
+  "alert_name": "KubePodCrashLooping",
+  "severity": "critical",
+  "message": "Pod payment-service-7d9f8b6c5-xk4nm in production namespace is crash looping. Pod has restarted 15 times in the last 10 minutes.",
+  "labels": {
+    "alertname": "KubePodCrashLooping",
+    "namespace": "production",
+    "pod": "payment-service-7d9f8b6c5-xk4nm",
+    "container": "payment-service",
+    "severity": "critical",
+    "service": "payment-service"
+  },
+  "annotations": {
+    "summary": "Pod payment-service-7d9f8b6c5-xk4nm in production namespace is crash looping",
+    "description": "Pod payment-service-7d9f8b6c5-xk4nm has restarted 15 times in the last 10 minutes",
+    "runbook_url": "https://runbooks.example.com/KubePodCrashLooping"
+  },
+  "firing_condition": "rate(kube_pod_container_status_restarts_total[5m]) > 0",
+  "timestamp": "2025-11-29T10:15:00Z"
+}

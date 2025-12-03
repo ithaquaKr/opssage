@@ -1,0 +1,18 @@
+{
+  "alert_name": "ServiceErrorRateHigh",
+  "severity": "critical",
+  "message": "Auth Service error rate is critically high. Error rate for auth-service is 98% over the last 5 minutes.",
+  "labels": {
+    "alertname": "ServiceErrorRateHigh",
+    "namespace": "production",
+    "service": "auth-service",
+    "severity": "critical"
+  },
+  "annotations": {
+    "summary": "Auth Service error rate is critically high",
+    "description": "Error rate for auth-service is 98% over the last 5 minutes",
+    "runbook_url": "https://runbooks.example.com/ServiceErrorRateHigh"
+  },
+  "firing_condition": "rate(http_requests_total{status=~\"5..\"}[5m])",
+  "timestamp": "2025-11-29T14:08:00Z"
+}
